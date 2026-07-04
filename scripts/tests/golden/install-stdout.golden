@@ -1,0 +1,2 @@
+Installed and loaded: <HOME>/Library/LaunchAgents/com.hyperworkflows.sentinel.plist (nightly 02:30 local time; machine timezone should be Asia/Singapore)
+Verify with: launchctl list | grep com.hyperworkflows.sentinel
