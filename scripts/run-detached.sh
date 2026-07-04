@@ -19,6 +19,12 @@ TS=$(date '+%Y%m%d-%H%M%S')
 LOG="runs/detached-$TS.log"
 PIDFILE="runs/detached-$TS.pid"
 
+# Field lesson #2 (same day): in -p mode the platform TERMINATES background tasks
+# ~600s after the model's turn ends ("Background tasks still running after 600s").
+# A workflow fleet is a background task — two audits died at exactly +600s before
+# this was set. Ceiling 0 = wait indefinitely for the fleet to land.
+export CLAUDE_CODE_PRINT_BG_WAIT_CEILING_MS="${CLAUDE_CODE_PRINT_BG_WAIT_CEILING_MS:-0}"
+
 # nohup + full detach: output to file, stdin from /dev/null, disowned from this shell.
 nohup claude -p "$PROMPT" --dangerously-skip-permissions --max-turns "$MAX_TURNS" \
   --output-format text < /dev/null > "$LOG" 2>&1 &

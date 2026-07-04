@@ -13,6 +13,7 @@ Run an evidence-grade audit. Arguments: `$ARGUMENTS` (optional scope path; optio
 
 **Execute**
 4. Run the engine shipped with this plugin: prefer the plugin-registered `hyperaudit` workflow if invocable by name; otherwise read `${CLAUDE_PLUGIN_ROOT}/workflows/hyperaudit.js` and execute it as a dynamic workflow with `{head, scope, run_id, force}`. (A project-local `.claude/workflows/hyperaudit.js` copy, if the user created one via optional `/hyperworkflows:init`, takes precedence.) The session stays responsive; report milestones only (done/total, measured rate, ETA with arithmetic, Asia/Singapore timestamps).
+   **Headless rule (non-interactive `-p` session):** the fleet dies ~600s after your turn ends unless `CLAUDE_CODE_PRINT_BG_WAIT_CEILING_MS=0` (run-detached.sh sets it). Never end with "I'll report when it lands" — there is no later turn to report in. Stay with the run until the workflow result arrives, then render the tricolor and persist before finishing.
 
 **Persist & render**
 5. If the workflow returned `formation: solo` — say why (touched < 5), remove `runs/ACTIVE`, and simply do the task directly in-session. Never run the fleet on a task that small unless `force` was given.

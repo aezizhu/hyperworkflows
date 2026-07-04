@@ -24,7 +24,7 @@ cat <<EOF
   <array>
     <string>/bin/sh</string>
     <string>-c</string>
-    <string>cd "$REPO_DIR" &amp;&amp; "$CLAUDE_BIN" -p "/hyperworkflows:sentinel nightly" --output-format json --max-turns 200 >> runs/sentinel-nightly.log 2>&amp;1</string>
+    <string>cd "$REPO_DIR" &amp;&amp; CLAUDE_CODE_PRINT_BG_WAIT_CEILING_MS=0 "$CLAUDE_BIN" -p "/hyperworkflows:sentinel nightly" --output-format json --max-turns 200 >> runs/sentinel-nightly.log 2>&amp;1</string>
   </array>
   <key>StartCalendarInterval</key>
   <dict><key>Hour</key><integer>2</integer><key>Minute</key><integer>30</integer></dict>
@@ -63,7 +63,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - run: npm install -g @anthropic-ai/claude-code
-      - run: claude -p "/hyperworkflows:sentinel nightly" --output-format json --max-turns 200
+      - run: CLAUDE_CODE_PRINT_BG_WAIT_CEILING_MS=0 claude -p "/hyperworkflows:sentinel nightly" --output-format json --max-turns 200
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
 YAML

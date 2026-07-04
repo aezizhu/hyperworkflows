@@ -13,6 +13,7 @@ Deliver a human-approved change plan. Argument: `$ARGUMENTS` (path to the plan; 
 **Execute**
 4. Run the engine shipped with this plugin: prefer the plugin-registered `hyperapply` workflow if invocable by name; otherwise read `${CLAUDE_PLUGIN_ROOT}/workflows/hyperapply.js` and execute it as a dynamic workflow with `{head, plan_path, run_id}`. (A project-local copy from optional `/hyperworkflows:init` takes precedence.)
 5. Milestones per level: groups done/total, entries green per group, repair rounds used. Asia/Singapore timestamps, measured-rate ETA.
+   **Headless rule (non-interactive `-p` session):** the fleet dies ~600s after your turn ends unless `CLAUDE_CODE_PRINT_BG_WAIT_CEILING_MS=0` (run-detached.sh sets it). Stay with the run until the workflow result arrives; never end the turn on a promise to report later.
 
 **Persist & render**
 6. Persist verdict files for every group (canonical schema, including the post-merge full-suite exit codes as probes). Write `report.md` + `report.json`.
