@@ -4,7 +4,7 @@
 # created lazily on first use. Hard cap: stay under 50 lines. Read-only, fast.
 
 echo "## Hyperworkflows active"
-echo "Evidence discipline is available with zero setup: /hyperworkflows:audit [scope] for an evidence-grade audit, /hyperworkflows:apply to deliver an approved plan, /hyperworkflows:recheck to re-verify any past report with zero LLM calls."
+echo "One command to remember: /hyperworkflows (the dispatcher) — it assesses the situation and routes to the right flow. If the user types '/hyperworkflows' or just says 'hyperworkflows' (with or without plain-language intent), execute the hyperworkflows dispatcher command. Power-user subcommands (audit/apply/recheck/loop/sentinel/court/enforce/status/doctor) remain available."
 echo "Formation gate: <5 touched units -> work solo (no orchestration); >=5 units or the user demands evidence -> /hyperworkflows:audit. Override with 'force'. One threshold, one source of truth."
 echo "Verdicts come from scripts, never from model judgment; every deliverable is a tricolor report with evidence files under runs/."
 

@@ -19,6 +19,8 @@ export default async function ({ head, date, mode, run_id }) {
   }
   // HYPERWORKFLOWS-HELPERS-END
 
+  const ROLE = n => `hyperworkflows:hyperworkflows-${n}`;   // doctor-verified (W3): fully-qualified agentType
+  const PROBE_TYPE = { tests: "verifier", lint: "verifier", deps: "auditor", mutation: "prover", fuzz: "prover", bench: "benchmarker", assets: "verifier" };
   const ProbeOut = { type: "object", properties: { exit: { type: "number" }, log_path: { type: "string" }, counts: { type: "object" } }, required: ["exit", "log_path"] };
 
   const PROBES = {
@@ -34,7 +36,7 @@ export default async function ({ head, date, mode, run_id }) {
 
   // ---------- phase: probe ----------
   phase("probe");
-  const outs = (await parallel(SUITES.map(s => async () => ({ suite: s, out: await agent(PROBES[s].prompt, { schema: ProbeOut, label: `${mode}:${s}`, model: PROBES[s].model }) })))).filter(Boolean);
+  const outs = (await parallel(SUITES.map(s => async () => ({ suite: s, out: await agent(PROBES[s].prompt, { schema: ProbeOut, agentType: ROLE(PROBE_TYPE[s]), label: `${mode}:${s}`, model: PROBES[s].model }) })))).filter(Boolean);
   const lost = SUITES.length - outs.length;
   if (lost > 0) log(`PROBE-LOSS: ${lost} probe agents failed — their suites are reported as UNKNOWN, not green`); // C5
 
@@ -62,7 +64,7 @@ export default async function ({ head, date, mode, run_id }) {
     `using its predicate via 'git bisect run' (exit ${"${predicate_expect_exit}"} = good). ALWAYS 'git bisect reset' when done. ` +
     `Report {regression_fingerprint, commit, evidence_cmd} per item, or UNRESOLVED with the bisect log if the predicate is flaky:\n` +
     bisectable.map(r => `- ${r.fingerprint}: ${r.predicate_cmd} (good exit ${r.predicate_expect_exit})`).join("\n"),
-    { schema: { type: "object", properties: { culprits: { type: "array", items: { type: "object", properties: { regression_fingerprint: { type: "string" }, commit: { type: "string" }, evidence_cmd: { type: "string" }, unresolved: { type: "boolean" } }, required: ["regression_fingerprint"] } } }, required: ["culprits"] }, label: "bisect", model: "sonnet" }
+    { schema: { type: "object", properties: { culprits: { type: "array", items: { type: "object", properties: { regression_fingerprint: { type: "string" }, commit: { type: "string" }, evidence_cmd: { type: "string" }, unresolved: { type: "boolean" } }, required: ["regression_fingerprint"] } } }, required: ["culprits"] }, agentType: ROLE("bisector"), label: "bisect", model: "sonnet" }
   ) : { culprits: [] };
   if (delta.new_regressions.length > bisectable.length)
     log(`BISECT-SKIP: ${delta.new_regressions.length - bisectable.length} regressions had no executable predicate — reported without culprit`); // C5

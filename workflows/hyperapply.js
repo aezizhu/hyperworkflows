@@ -66,6 +66,8 @@ export default async function ({ head, plan_path, run_id }) {
   const VERIFIER = "ROLE: verifier. Run EXACTLY the commands given, in order. Report every raw exit code verbatim. Never retry, never fix, never interpret, never modify repository files. Verdicts are computed by script, not by you.";
   const BUILDER = "ROLE: builder. Implement to the contract in your isolated worktree. Follow existing repository conventions. Run the acceptance commands yourself before reporting; report branch, files changed, self-observed exit codes. You may be one of several blind tournament entries — commit fully to your approach.";
   const MERGER = "ROLE: single merger. Serial merges only. Full suite after every merge. Red suite means revert immediately. Mechanical conflicts may be resolved and noted; semantic conflicts are STUCK. Never push to remotes.";
+  // Doctor-verified (W3): workflow agentType requires the fully-qualified plugin name.
+  const ROLE = n => `hyperworkflows:hyperworkflows-${n}`;
 
   const Probe = { type: "object", properties: { cmd: { type: "string" }, expect_exit: { type: "number" } }, required: ["cmd", "expect_exit"] };
   const ExitCodes = { type: "object", properties: { exit_codes: { type: "array", items: { type: "object", properties: { cmd: { type: "string" }, exit: { type: "number" } }, required: ["cmd", "exit"] } } }, required: ["exit_codes"] };
@@ -87,7 +89,7 @@ export default async function ({ head, plan_path, run_id }) {
         `${VERIFIER}\nWorktree branch: ${build.branch} (check it out in your working copy or run commands against it as instructed).\n` +
         `Run these commands in order from the repo root and report raw exit codes:\n` + g.acceptance.map(p => p.cmd).join("\n") +
         `\nAppend {"group":"${g.id}","entry":"${tag}","k":${k},"exit_codes":[...]} as one JSON line to runs/${run_id}/verdicts-raw/${slug(tag)}.jsonl via Bash.`,
-        { schema: ExitCodes, label: `verify:${slug(tag)}:k${k}`, model: "sonnet" });
+        { schema: ExitCodes, agentType: ROLE("verifier"), label: `verify:${slug(tag)}:k${k}`, model: "sonnet" });
       const verdict = adjudicate(g.acceptance, v.exit_codes);              // C2
       if (verdict.pass) return { build, status: "PASS", evidence: v.exit_codes, rounds: k, confirmed_findings: 0 };
       const sig = failureSignature(verdict.failures.map(f => ({ cmd: f.cmd, exit: f.exit })));
@@ -99,7 +101,7 @@ export default async function ({ head, plan_path, run_id }) {
         `FAILURE HISTORY (fix these; do not undo prior passing behavior):\n` +
         verdict.failures.map(f => `- ${f.cmd} expected ${f.expect_exit} got ${f.exit}`).join("\n") +
         `\nContract: ${JSON.stringify(g.acceptance)}\nReport branch, files changed, self-observed exit codes.`,
-        { schema: BuildOut, label: `repair:${slug(tag)}:k${k}`, model: k % 2 === 0 ? "opus" : "sonnet" }); // rotate tiers to break anchoring
+        { schema: BuildOut, agentType: ROLE("builder"), label: `repair:${slug(tag)}:k${k}`, model: k % 2 === 0 ? "opus" : "sonnet" }); // rotate tiers to break anchoring
     }
   }
 
@@ -111,7 +113,7 @@ export default async function ({ head, plan_path, run_id }) {
     `(different levels) or be merged into one group; groups within one level MUST be file-disjoint. Each group: ` +
     `id, units (paths), level (0-based dependency order), acceptance [{cmd, expect_exit}] covering all its units, critical (boolean).\n` +
     `2) full_suite: [{cmd, expect_exit}] — the repository's complete test/lint suite commands from the plan or project config.`,
-    { schema: { type: "object", properties: { groups: { type: "array", items: { type: "object", properties: { id: { type: "string" }, units: { type: "array", items: { type: "string" } }, level: { type: "number" }, acceptance: { type: "array", items: Probe }, critical: { type: "boolean" } }, required: ["id", "units", "level", "acceptance"] } }, full_suite: { type: "array", items: Probe } }, required: ["groups", "full_suite"] }, label: "topo-group", model: "opus" });
+    { schema: { type: "object", properties: { groups: { type: "array", items: { type: "object", properties: { id: { type: "string" }, units: { type: "array", items: { type: "string" } }, level: { type: "number" }, acceptance: { type: "array", items: Probe }, critical: { type: "boolean" } }, required: ["id", "units", "level", "acceptance"] } }, full_suite: { type: "array", items: Probe } }, required: ["groups", "full_suite"] }, agentType: ROLE("scout"), label: "topo-group", model: "opus" });
   if (!plan.full_suite || !plan.full_suite.length) { log("HALT: plan has no full_suite commands — merges cannot be gated (C2)"); return { formation: "HALT-NO-SUITE" }; }
 
   // ---------- phase: tournament-build ----------
@@ -125,7 +127,7 @@ export default async function ({ head, plan_path, run_id }) {
       const pre = await agent(
         `${VERIFIER}\nBase commit ${head}, current working tree. Run these commands in order and report raw exit codes:\n` +
         g.acceptance.map(p => p.cmd).join("\n"),
-        { schema: ExitCodes, label: `preverify:${slug(g.id)}`, model: "sonnet" });
+        { schema: ExitCodes, agentType: ROLE("verifier"), label: `preverify:${slug(g.id)}`, model: "sonnet" });
       const preVerdict = adjudicate(g.acceptance, pre.exit_codes);         // C2
       if (preVerdict.pass) {
         log(`ALREADY-APPLIED: group ${g.id} acceptance passes at base — verified skip, no builders spawned`);
@@ -137,7 +139,7 @@ export default async function ({ head, plan_path, run_id }) {
           `${BUILDER}\nGroup ${g.id} at base ${head}. Units: ${g.units.join(", ")}.\n` +
           `Read the full task details for these units in ${plan_path}.\nSTRATEGY: ${STRATEGY[i % STRATEGY.length]}\n` +
           `Contract (must all pass): ${JSON.stringify(g.acceptance)}`,
-          { schema: BuildOut, label: `build:${slug(g.id)}:v${i}`, model: "opus" });
+          { schema: BuildOut, agentType: ROLE("builder"), label: `build:${slug(g.id)}:v${i}`, model: "opus" });
         return verifyToFixpoint(build, g, `${g.id}:v${i}`);
       }))).filter(Boolean);
       return { group: g, entries, winner: selectWinner(entries) };
@@ -162,7 +164,7 @@ export default async function ({ head, plan_path, run_id }) {
       `4) If any suite command's exit differs from expectation ${JSON.stringify(plan.full_suite)}: git revert the merge immediately and say so.\n` +
       `5) rm runs/${run_id}/MERGE_TOKEN\n` +
       `Report: merged (boolean, true only if the merge REMAINED in place), conflict_files, suite exit_codes, reverted (boolean).`,
-      { schema: { type: "object", properties: { merged: { type: "boolean" }, reverted: { type: "boolean" }, conflict_files: { type: "array", items: { type: "string" } }, exit_codes: { type: "array", items: { type: "object", properties: { cmd: { type: "string" }, exit: { type: "number" } } } } }, required: ["merged", "exit_codes"] }, label: `merge:${slug(d.group.id)}`, model: "opus" });
+      { schema: { type: "object", properties: { merged: { type: "boolean" }, reverted: { type: "boolean" }, conflict_files: { type: "array", items: { type: "string" } }, exit_codes: { type: "array", items: { type: "object", properties: { cmd: { type: "string" }, exit: { type: "number" } } } } }, required: ["merged", "exit_codes"] }, agentType: ROLE("merger"), label: `merge:${slug(d.group.id)}`, model: "opus" });
     const suiteVerdict = adjudicate(plan.full_suite, m.exit_codes);        // C2: script re-adjudicates the merger's report
     if (m.merged && suiteVerdict.pass) merged.push({ group: d.group.id, branch: d.winner.build.branch, rounds: d.winner.rounds, suite: m.exit_codes });
     else quarantined.push({ group: d.group.id, reason: m.reverted ? "full suite red after merge (reverted)" : "merge failed", failures: suiteVerdict.failures, conflict_files: m.conflict_files || [] });

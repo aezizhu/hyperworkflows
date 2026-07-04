@@ -58,6 +58,9 @@ export default async function ({ head, scope, run_id, force }) {
   const SCOUT = "ROLE: read-only scout. Measure and enumerate deterministically (path-lexicographic). Report numbers with the method that produced them. Never conclude beyond direct observation.";
   const VERIFIER = "ROLE: verifier. Run EXACTLY the commands given, in order, from the repo root. Report every raw exit code verbatim. Never retry, never fix, never interpret, never modify repository files. Verdicts are computed by script from your exit codes, not by you.";
   const ATTACKER = "ROLE: adversarial falsifier. You receive claims and a contract, never the producer's reasoning. Every finding MUST carry an executable repro you have personally run: {claim, repro_cmd, expect_exit} where expect_exit is what the command exits with if the claim is TRUE. No repros, no finding.";
+  // Doctor-verified (W3): workflow agentType requires the fully-qualified plugin name.
+  // Binds the role's tool allowlist for real; embedded contracts above stay as defense in depth.
+  const ROLE = n => `hyperworkflows:hyperworkflows-${n}`;
 
   // ---------- schemas ----------
   const Probe = { type: "object", properties: { cmd: { type: "string" }, expect_exit: { type: "number" } }, required: ["cmd", "expect_exit"] };
@@ -88,7 +91,7 @@ export default async function ({ head, scope, run_id, force }) {
   phase("recon");
   const probe = await agent(
     `${SCOUT}\nRecon ${scope} at commit ${head}: count auditable work units (source files in scope), assess homogeneity, sketch risk spread. Output numbers and the counting method.`,
-    { schema: { type: "object", properties: { touched: { type: "number" }, homogeneous: { type: "boolean" }, notes: { type: "array", items: { type: "string" } } }, required: ["touched"] }, label: "probe", model: "haiku" });
+    { schema: { type: "object", properties: { touched: { type: "number" }, homogeneous: { type: "boolean" }, notes: { type: "array", items: { type: "string" } } }, required: ["touched"] }, agentType: ROLE("scout"), label: "probe", model: "haiku" });
   if (probe.touched < 5 && !force) {
     log("FORMATION: solo — orchestration adds coordination surface, not evidence quality, below 5 units");
     return { formation: "solo", probe };
@@ -104,9 +107,9 @@ export default async function ({ head, scope, run_id, force }) {
     `Files over 500 lines: split into section-aligned sub-units (unit path "file#L<start>-L<end>", boundaries on ` +
     `function/class/section edges) so no analyzer swallows a 2000-line file whole; sub-units inherit the file's acceptance.`;
   const enums = (await parallel([
-    () => agent(enumPrompt("filesystem walk via git ls-files"), { schema: EnumSchema, label: "enum:fs", model: "sonnet" }),
-    () => agent(enumPrompt("symbol/module graph via rg and import tracing"), { schema: EnumSchema, label: "enum:sym", model: "sonnet" }),
-    () => agent(enumPrompt("build/test dependency graph (build files, test manifests)"), { schema: EnumSchema, label: "enum:build", model: "sonnet" }),
+    () => agent(enumPrompt("filesystem walk via git ls-files"), { schema: EnumSchema, agentType: ROLE("scout"), label: "enum:fs", model: "sonnet" }),
+    () => agent(enumPrompt("symbol/module graph via rg and import tracing"), { schema: EnumSchema, agentType: ROLE("scout"), label: "enum:sym", model: "sonnet" }),
+    () => agent(enumPrompt("build/test dependency graph (build files, test manifests)"), { schema: EnumSchema, agentType: ROLE("scout"), label: "enum:build", model: "sonnet" }),
   ])).filter(Boolean);
   if (enums.length < 2) { log("ENUM-FATAL: fewer than 2 enumerators returned (C7 unmet)"); return { formation: "HALT-ENUM", reason: "enumerator failures", enums_ok: enums.length }; }
 
@@ -117,7 +120,7 @@ export default async function ({ head, scope, run_id, force }) {
       `${SCOUT}\nThese paths at ${head} were flagged by exactly one of three independent enumerators:\n` +
       disputed.map(u => `- ${u.path}`).join("\n") +
       `\nFor each: confirm whether it is a real in-scope auditable unit (emit the full unit record) or out of scope (emit path + one-line reason).`,
-      { schema: { type: "object", properties: { resolved: { type: "array", items: Unit }, out_of_scope: { type: "array", items: { type: "object", properties: { path: { type: "string" }, reason: { type: "string" } }, required: ["path", "reason"] } } }, required: ["resolved", "out_of_scope"] }, label: "enum:gap", model: "opus" });
+      { schema: { type: "object", properties: { resolved: { type: "array", items: Unit }, out_of_scope: { type: "array", items: { type: "object", properties: { path: { type: "string" }, reason: { type: "string" } }, required: ["path", "reason"] } } }, required: ["resolved", "out_of_scope"] }, agentType: ROLE("scout"), label: "enum:gap", model: "opus" });
     units = sortByPath(units.concat(gap.resolved || []));
     const unresolved = disputed.length - (gap.resolved || []).length - (gap.out_of_scope || []).length;
     if (unresolved > Math.max(1, units.length * 0.05)) {
@@ -136,7 +139,7 @@ export default async function ({ head, scope, run_id, force }) {
         `(golden file > property test > metamorphic relation > snapshot), as TEST-ONLY changes in your isolated worktree. ` +
         `The forged acceptance must PASS on current code — if it fails you found a defect: report it as defect_found instead. ` +
         `Output acceptance [{cmd, expect_exit}] runnable from the repo root, or infeasible_reason (one concrete sentence).`,
-        { schema: { type: "object", properties: { acceptance: { type: "array", items: Probe }, infeasible_reason: { type: "string" }, defect_found: { type: "string" }, branch: { type: "string" } } }, label: `forge:${slug(g.path)}`, model: "opus" }) })
+        { schema: { type: "object", properties: { acceptance: { type: "array", items: Probe }, infeasible_reason: { type: "string" }, defect_found: { type: "string" }, branch: { type: "string" } } }, agentType: ROLE("oracle-smith"), label: `forge:${slug(g.path)}`, model: "opus" }) })
     )).filter(Boolean);
     for (const f of forged) {
       const u = units.find(x => x.path === f.meta.path);
@@ -153,7 +156,7 @@ export default async function ({ head, scope, run_id, force }) {
     `(performance, security, concurrency, boundary semantics, error paths, resource lifecycle). Every hole MUST carry an ` +
     `executable proposed {cmd, expect_exit}. Holes without commands are opinions — omit them.\n` +
     sortByPath(units.filter(u => !u.grey)).map(u => `UNIT ${u.path}: ${JSON.stringify(u.acceptance)}`).join("\n"),
-    { schema: { type: "object", properties: { missing: { type: "array", items: { type: "object", properties: { path: { type: "string" }, dimension: { type: "string" }, cmd: { type: "string" }, expect_exit: { type: "number" } }, required: ["path", "dimension", "cmd", "expect_exit"] } } }, required: ["missing"] }, label: "spec-attack", model: "opus" });
+    { schema: { type: "object", properties: { missing: { type: "array", items: { type: "object", properties: { path: { type: "string" }, dimension: { type: "string" }, cmd: { type: "string" }, expect_exit: { type: "number" } }, required: ["path", "dimension", "cmd", "expect_exit"] } } }, required: ["missing"] }, agentType: ROLE("spec-attacker"), label: "spec-attack", model: "opus" });
   for (const h of holes.missing || []) {
     const u = units.find(x => x.path === h.path);
     if (u && !u.grey) u.acceptance.push({ cmd: h.cmd, expect_exit: h.expect_exit });
@@ -175,7 +178,7 @@ export default async function ({ head, scope, run_id, force }) {
       `CLAIMS UNDER TEST (falsify wrong ones, find what they missed):\n` +
       (r.analysis.findings || []).map(f => `- ${f.claim} [evidence: ${f.evidence_cmd} => ${f.evidence_expect_exit}]`).join("\n") +
       `\nOutput additional or falsifying findings with executed repros only.`,
-      { schema: { type: "object", properties: { findings: { type: "array", items: { type: "object", properties: { claim: { type: "string" }, repro_cmd: { type: "string" }, expect_exit: { type: "number" } }, required: ["claim", "repro_cmd", "expect_exit"] } } }, required: ["findings"] }, label: `attack:${slug(r.meta.path)}`, model: "opus" }) }),
+      { schema: { type: "object", properties: { findings: { type: "array", items: { type: "object", properties: { claim: { type: "string" }, repro_cmd: { type: "string" }, expect_exit: { type: "number" } }, required: ["claim", "repro_cmd", "expect_exit"] } } }, required: ["findings"] }, agentType: ROLE("attacker"), label: `attack:${slug(r.meta.path)}`, model: "opus" }) }),
     async r => {
       const acceptance = r.meta.acceptance;
       const findingProbes = (r.analysis.findings || []).map(f => ({ cmd: f.evidence_cmd, expect_exit: f.evidence_expect_exit }));
@@ -185,7 +188,7 @@ export default async function ({ head, scope, run_id, force }) {
         `${VERIFIER}\nWorking directory: repo root at commit ${head}.\nRun these commands in order and report every raw exit code:\n` +
         all.map(p => p.cmd).join("\n") +
         `\nAfter running, append your raw results as one JSON line {"unit":"${r.meta.path}","exit_codes":[...]} to runs/${run_id}/verdicts-raw/${slug(r.meta.path)}.jsonl using Bash (telemetry checkpoint — the only write you perform).`,
-        { schema: ExitCodes, label: `verify:${slug(r.meta.path)}`, model: "sonnet" });
+        { schema: ExitCodes, agentType: ROLE("verifier"), label: `verify:${slug(r.meta.path)}`, model: "sonnet" });
       // C2: all verdicts computed here, in script.
       const acceptanceVerdict = adjudicate(acceptance, v.exit_codes);
       const confirmedFindings = adjudicate(findingProbes, v.exit_codes).results.filter(x => x.ok);

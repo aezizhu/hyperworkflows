@@ -49,6 +49,16 @@ Local development: `claude --plugin-dir /path/to/hyperworkflows`. One platform n
 
 ## Commands
 
+**You only need one:**
+
+```
+/hyperworkflows [anything, in plain words — or nothing]
+```
+
+The dispatcher assesses the situation (changed files? pending approved fixes? active run? stale baseline?) and routes to the right flow, announcing its choice in one line. "fix the auth bug" → audit scoped to auth; "keep going until clean" → loop; nothing at all → the most useful next move for this repo.
+
+Power users can drive flows directly:
+
 | Command | What it does |
 |---|---|
 | `/hyperworkflows:audit [scope] [force]` | Full-coverage adversarial audit → adjudicated tricolor report + decision request |
