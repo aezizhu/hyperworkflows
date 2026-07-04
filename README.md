@@ -51,9 +51,37 @@ workflows/        3 engines: hyperaudit, hyperapply, hw-sentinel (installed by /
 hooks/            deny wall, session brief, telemetry sensor, court evidence gate
 scripts/          deterministic zero-dependency logic (Node >= 18 + POSIX sh)
 skills/           methodology: oracle-forging, spec-attack, tricolor-reporting, adjudication-protocol, merge-discipline
-adapters/devin/   portability proof: skills + role contracts for Devin (install.sh)
+adapters/         universal installer for every mainstream coding agent (see below)
 test/             node:test suite for every deterministic component
 ```
+
+## Beyond Claude Code: every mainstream coding agent
+
+Claude Code gets the full engine (workflows, agent fleet, hooks). Every other tool gets the portable core — `.hw/` toolkit (script-computed verdicts + zero-LLM recheck), the HW operating rules in the tool's native rules surface, and native commands where the tool supports them:
+
+```sh
+sh adapters/install.sh <tool> /path/to/project     # or: all
+```
+
+| Tool | Rules surface | Native commands |
+|---|---|---|
+| Codex / Amp / Jules / generic (`agents-md`) | `AGENTS.md` (marked section) | — |
+| Cursor | `.cursor/rules/hw.mdc` (alwaysApply) | `.cursor/commands/hw-{audit,apply,recheck}.md` |
+| GitHub Copilot | `.github/copilot-instructions.md` + `.github/instructions/hw.instructions.md` | — |
+| Gemini CLI | `GEMINI.md` | `.gemini/commands/hw/{audit,apply,recheck}.toml` |
+| Windsurf | `.windsurf/rules/hw.md` | `.windsurf/workflows/hw-{audit,apply,recheck}.md` |
+| opencode | `AGENTS.md` | `.opencode/command/hw-{audit,apply,recheck}.md` |
+| Cline / Roo Code | `.clinerules/hw.md` / `.roo/rules/hw.md` | — |
+| Aider | `CONVENTIONS.md` (+ `read:` in `.aider.conf.yml`) | — |
+| Qwen Code | `QWEN.md` | — |
+| Kiro | `.kiro/steering/hw.md` (inclusion: always) | — |
+| Warp | `WARP.md` | — |
+| Zed | `.rules` | — |
+| JetBrains Junie | `.junie/guidelines.md` | — |
+| Trae | `.trae/rules/hw.md` | — |
+| Devin | `.devin/skills/hw-*` + role prompts | — |
+
+Marked sections are idempotent (re-running the installer updates in place, never duplicates) and preserve your existing file content. Every adapter is covered by the test suite.
 
 ## Development
 

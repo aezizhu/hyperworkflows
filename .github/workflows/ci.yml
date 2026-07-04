@@ -13,7 +13,7 @@ jobs:
         with:
           node-version: 22
       - name: Shell syntax
-        run: for f in scripts/*.sh adapters/devin/install.sh; do sh -n "$f" && echo "OK $f"; done
+        run: for f in scripts/*.sh adapters/install.sh adapters/devin/install.sh; do sh -n "$f" && echo "OK $f"; done
       - name: JS syntax
         run: for f in scripts/*.mjs workflows/*.js; do node --check "$f" && echo "OK $f"; done
       - name: JSON manifests
