@@ -5,13 +5,13 @@ argument-hint: "[scope] [force]"
 
 Run an evidence-grade audit. Arguments: `$ARGUMENTS` (optional scope path; optional literal `force` to override the solo gate).
 
-**Setup**
+**Setup (all lazy — no init required)**
 1. `head` = `git rev-parse --short HEAD`. Scope = the given path; if none, changed files vs the default branch; if none, the repo root.
-2. `run_id` = `hw-audit-<head>`. Create `runs/<run_id>/verdicts/`, write `<run_id>` into `runs/ACTIVE`.
+2. `run_id` = `hw-audit-<head>`. Create `runs/<run_id>/verdicts/` (mkdir -p), write `<run_id>` into `runs/ACTIVE`. First run only: if `runs/` is not covered by `.gitignore`, append `runs/` and `memory/` to it and mention that in one line.
 3. Print the initiation card (4 lines): exit condition (tricolor report with 100% of non-grey units adjudicated), phase plan (recon → enumerate-x3 → forge-oracles → spec-attack → analyze-attack-verify → crosscut-reduce), roster summary, and scope@head. Then proceed — do not wait for confirmation (the card is a veto point, not a gate).
 
 **Execute**
-4. Invoke the named workflow `hyperaudit` with `{head, scope, run_id, force}`. If named workflows are unavailable, read `${CLAUDE_PLUGIN_ROOT}/workflows/hyperaudit.js` and run it as a dynamic workflow with the same args. The session stays responsive; report milestones only (done/total, measured rate, ETA with arithmetic, Asia/Singapore timestamps).
+4. Run the engine shipped with this plugin: prefer the plugin-registered `hyperaudit` workflow if invocable by name; otherwise read `${CLAUDE_PLUGIN_ROOT}/workflows/hyperaudit.js` and execute it as a dynamic workflow with `{head, scope, run_id, force}`. (A project-local `.claude/workflows/hyperaudit.js` copy, if the user created one via optional `/hw:init`, takes precedence.) The session stays responsive; report milestones only (done/total, measured rate, ETA with arithmetic, Asia/Singapore timestamps).
 
 **Persist & render**
 5. If the workflow returned `formation: solo` — say why (touched < 5), remove `runs/ACTIVE`, and simply do the task directly in-session. Never run the fleet on a task that small unless `force` was given.

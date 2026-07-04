@@ -29,7 +29,7 @@ Verified against official docs (code.claude.com) on 2026-07-04. This is the plug
 | P5 | Agent teams (experimental, `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS`): lead + teammates, shared file-based task list, mailboxes; hooks `TeammateIdle`, `TaskCreated`, `TaskCompleted` (exit 2 blocks; `{"continue": false}` stops); teammates honor agent-definition `tools`/`model`; **no resume, volatile** | VERIFIED (docs; experimental) | Adjudication court (§5.3), optional |
 | P6 | Hooks: `PreToolUse` (blocking), `PostToolUse`, `SessionStart`, `UserPromptSubmit`, `Stop`, `SubagentStart`, `SubagentStop`, `TeammateIdle`, `TaskCreated`, `TaskCompleted`; plugins ship `hooks/hooks.json`; hook config changes take effect **next session** | VERIFIED (docs) | L1 policy layer, zero-token sensors |
 | P7 | Headless: `claude -p` with `--output-format json/stream-json`, `--json-schema` → `structured_output`, `--allowedTools`, `--max-turns`, `--bare` (skip discovery; recommended for scripted calls), cost fields in JSON output | VERIFIED (docs) | Sentinel cron / CI runner |
-| W1 | Can a plugin **ship named workflows** so they're invocable without copying? `.claude/workflows/` is not a documented plugin component | **OPEN** | Fallback (designed-in): `/hw:init` copies `${CLAUDE_PLUGIN_ROOT}/workflows/*.js` into the project's `.claude/workflows/` (idempotent, versioned header comment) |
+| W1 | Can a plugin **ship named workflows** so they're invocable without copying? | **VERIFIED — YES** (smoke-tested on Claude Code 2.1.201: `workflows/*.js` auto-register, visible as `/hw:hyperaudit` etc.). Onboarding is therefore zero-setup; `/hw:init` is demoted to optional provisioning (local engine copies for cache stability / customization) | No copying needed; dynamic-workflow read from `${CLAUDE_PLUGIN_ROOT}/workflows/` remains as fallback |
 | W2 | Workflow runtime module access: can workflow JS `import`/`require` (fs, path)? Community analysis says the runtime injects only the primitives | **OPEN — assume NO** | All adjudication helpers are **inlined pure functions** in each workflow script; file IO happens inside `agent()` calls or via hooks. Standalone `.mjs` scripts exist separately for hooks/commands |
 | W3 | Does `agent()` inside a workflow accept `agentType`/custom agent + `isolation: worktree`? Docs show subagent frontmatter supports it; workflow docs show `label/schema/phase/model` | **OPEN** | If `agentType` unsupported: embed the role's system-prompt contract directly in the `agent()` prompt (roles ship as both agent files AND prompt fragments — see §3.6) |
 | W4 | PreToolUse payload: does it identify the calling agent (so the guard can enforce "only hw-merger merges")? | **OPEN** | Fallback: merge-token file protocol (§3.4) — guard allows `git merge/push` only while `runs/<id>/MERGE_TOKEN` exists, created/removed by the merge phase |
@@ -48,7 +48,7 @@ hyperworkflows/
 │   ├── plugin.json              # name: "hw", version, description
 │   └── marketplace.json         # lists this plugin; enables /plugin marketplace add <owner>/hyperworkflows
 ├── commands/                    # slash commands (thin: parse args, invoke workflows/scripts, render cards)
-│   ├── init.md                  #   /hw:init     — scaffold project (workflows copy, runs/, memory/, baselines)
+│   ├── init.md                  #   /hw:init     — OPTIONAL provisioning (local engine copies, baselines)
 │   ├── doctor.md                #   /hw:doctor   — verify platform assumptions W1–W4, hooks live, roster loaded
 │   ├── audit.md                 #   /hw:audit    — evidence plane (hyperaudit workflow)
 │   ├── apply.md                 #   /hw:apply    — delivery plane (hyperapply workflow)
@@ -64,7 +64,7 @@ hyperworkflows/
 │   ├── tricolor-reporting/SKILL.md
 │   ├── adjudication-protocol/SKILL.md
 │   └── merge-discipline/SKILL.md
-├── workflows/                   # named workflow sources, installed to .claude/workflows/ by /hw:init (W1 fallback)
+├── workflows/                   # engines; auto-registered by the plugin (W1 verified) — no copying needed
 │   ├── hyperaudit.js
 │   ├── hyperapply.js
 │   └── hw-sentinel.js
@@ -81,7 +81,7 @@ hyperworkflows/
 └── README.md
 ```
 
-Project-side state created by `/hw:init` (never inside the plugin dir):
+Project-side state, created lazily on first use (never inside the plugin dir):
 
 ```
 <repo>/
@@ -106,7 +106,7 @@ Commands never do batch work themselves; they parse arguments, launch workflows/
 
 | Command | Contract |
 |---|---|
-| `/hw:init` | Idempotent scaffold. Copies workflows (W1 fallback) with a version header; creates `runs/`, `memory/router.md`, `memory/last-good.json`; prints what changed. Refuses nothing silently: every skipped step is listed with a reason. |
+| `/hw:init` | OPTIONAL provisioning (zero-setup is the default): local engine copies for prefix-cache stability or customization, gitignore hygiene, baseline seeding. Never part of onboarding. |
 | `/hw:doctor` | Executes the assumption register: minimal 2-agent workflow probe (P2/W3), verifier write-denial test (P3), hook liveness (P6 — reminds that hook changes need a restart), teams env flag (P5), `git worktree` sanity (P4), model availability probe (`fable`, `opus`). Writes `runs/doctor-<date>/report.md`. |
 | `/hw:audit [scope]` | Initiation card → `workflow('hyperaudit', {head, scope})` → on completion renders verdict card (tricolor + coverage + evidence-chain paths) and, if fixes are proposed, writes `decision-request.md` for the human gate. |
 | `/hw:apply <plan-path>` | Human-approved plan only (the human gate is the workflow split point: audit ends → human decides → apply starts). Launches `workflow('hyperapply', ...)`. Renders merge results with per-group full-suite exit codes. |
@@ -139,7 +139,7 @@ All ship as `agents/hw-*.md`. Frontmatter is the enforcement mechanism (C3 indep
 
 ### 3.3 Named Workflows (the two engines + sentinel)
 
-Shipped in `workflows/`, installed to `.claude/workflows/` by `/hw:init` (W1). Key structural properties:
+Shipped in `workflows/` and auto-registered by the plugin (W1 verified); optional project-local copies via `/hw:init` take precedence. Key structural properties:
 
 - **hyperaudit.js** — evidence plane. Phases: `recon` (formation gate: `touched < 5 && !args.force` → return solo recommendation) → `enumerate-x3` (three independent enumerators: fs-walk, symbol-graph, build-graph; **deterministic set reconciliation inlined in the script**; unresolved disagreement >5% of units → HALT with decision-request — a hard gate, not a log line) → `forge-oracles` (grey queue → hw-oracle-smith) → `spec-attack` → `analyze+attack+verify` (a `pipeline()` where stage functions **thread unit metadata through explicitly**: `async u => ({meta: u, analysis: await agent(...)})` so downstream stages always see unit metadata, not just the previous stage's schema; 100% coverage, no sampling; verifier returns exit codes only and the **verdict is computed by an inlined pure function** `adjudicate(acceptance, exitCodes)` — C2) → `crosscut+reduce` (one global pass over the distilled digest; tricolor built deterministically in script).
 - **hyperapply.js** — delivery plane. Phases: `topo-group` (group by shared files; emit **topological levels**) → `tournament-build` (outer `for` over levels **serially**, `parallel()` across groups within a level, so file-sharing groups can never build concurrently; per group, N=3 mutually-blind hw-builder entries; each entry runs `verifyToFixpoint`: verify → adjudicate in script → repair with fresh builder + failure history → **verify again after every repair**, so no repair round is ever discarded unverified; stop conditions are correctness-based, never budget-based: same failure signature twice = STUCK, k≥8 = FLAKY-ORACLE → route to oracle-smith; winner selected by a deterministic comparator on the C8 depth ladder: acceptance-green > fewer confirmed attacker findings > differential agreement > bench) → `merge` (hw-merger only, serial, full suite after each merge, MERGE_TOKEN protocol) → tricolor.

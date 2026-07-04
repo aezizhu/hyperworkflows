@@ -9,8 +9,8 @@ Time-plane operations. Argument: `$ARGUMENTS` (default: `merge`).
 Run `sh ${CLAUDE_PLUGIN_ROOT}/scripts/sentinel-install.sh` and show its output (three scheduling options). Only run with `--install-launchd` if the human explicitly picks option A. Note plainly: the launchd job fires at 02:30 machine-local time; confirm the machine timezone is Asia/Singapore.
 
 **Otherwise (merge | nightly | weekly)**
-1. `head` = `git rev-parse --short HEAD`; `date` = today (Asia/Singapore); `run_id` = `hw-sentinel-<date>-<mode>`. Write `runs/ACTIVE`.
-2. Invoke named workflow `hw-sentinel` with `{head, date, mode, run_id}` (dynamic fallback from `${CLAUDE_PLUGIN_ROOT}/workflows/hw-sentinel.js`).
+1. `head` = `git rev-parse --short HEAD`; `date` = today (Asia/Singapore); `run_id` = `hw-sentinel-<date>-<mode>`. Create `runs/<run_id>/` (mkdir -p), write `runs/ACTIVE`.
+2. Run the engine shipped with this plugin: prefer the plugin-registered `hw-sentinel` workflow if invocable by name; otherwise read `${CLAUDE_PLUGIN_ROOT}/workflows/hw-sentinel.js` and execute it as a dynamic workflow with `{head, date, mode, run_id}`. (A project-local copy from optional `/hw:init` takes precedence.)
 3. On completion:
    - No new regressions: one line — "Sentinel <mode>: no new regressions vs last-good (<baseline head>)." Plus fixed-count if any disappeared.
    - New regressions: render each with suite, fingerprint, bisected culprit commit (when auto-bisect resolved), and the evidence command. Write `runs/<run_id>/fix-request.md` ready for `/hw:apply`. NEVER advance `memory/last-good.json` on a red run.

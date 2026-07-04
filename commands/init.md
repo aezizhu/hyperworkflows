@@ -1,19 +1,14 @@
 ---
-description: Initialize HW in this project - install workflow engines, blackboard directories, and memory baseline (idempotent)
+description: OPTIONAL project provisioning - HW works with zero setup; use only for local engine copies, gitignore hygiene, or baseline seeding
 ---
 
-Initialize Hyperworkflows in the current project. Be idempotent: report every step as CREATED, UPDATED, or ALREADY-PRESENT — never skip silently.
+HW requires NO initialization. Engines, hooks, agents, and skills ship with the plugin; `runs/` and `memory/` are created lazily on first use. Say so if the user seems to believe init is required.
 
-1. Verify this is a git repository (`git rev-parse --git-dir`). If not, stop and say HW requires git.
-2. Create directories if missing: `.claude/workflows/`, `runs/`, `memory/candidates/`.
-3. Copy the three workflow engines from `${CLAUDE_PLUGIN_ROOT}/workflows/` into `.claude/workflows/`:
-   `hyperaudit.js`, `hyperapply.js`, `hw-sentinel.js`. If a destination file exists and differs, show a diff summary and ask before overwriting (the project may have local modifications).
-4. Create `memory/router.md` if missing, with the header line:
-   `# HW router - measured runs (formation | scope | units | agents | wall-clock | health)`
-5. Create `memory/last-good.json` if missing, containing: `{"head": null, "date": null, "failures": []}`
-6. Append `runs/` to `.gitignore` if not already ignored (run blackboards are local telemetry, not source).
-7. Print a completion card listing: what was created/updated/already present, then EXACTLY these two next steps:
-   - Restart this session (hooks activate next session — this is a platform property, not optional).
-   - Run `/hw:doctor` to verify every platform assumption with evidence.
+Run the following ONLY because the user explicitly asked, and report every step as CREATED, UPDATED, or ALREADY-PRESENT — never skip silently:
 
-Do not run any workflow, audit, or other side effect during init.
+1. Verify this is a git repository (`git rev-parse --git-dir`). If not, stop and say HW needs git.
+2. **Local engine copies (optional benefit: prefix-cache stability across plugin updates, or project-specific engine customization)**: copy `${CLAUDE_PLUGIN_ROOT}/workflows/*.js` into `.claude/workflows/` with a version header. If a destination exists and differs, show a diff summary and ask before overwriting — the project may have local modifications. Without local copies, commands use the plugin-shipped engines automatically.
+3. **Gitignore hygiene**: append `runs/` and `memory/` to `.gitignore` if not already covered (otherwise this happens automatically on the first audit run).
+4. **Baseline seeding**: create `memory/router.md` (header: `# HW router - measured runs (formation | scope | units | agents | wall-clock | health)`) and `memory/last-good.json` (`{"head": null, "date": null, "failures": []}`) if missing.
+
+Print a completion card listing what changed. No workflow, audit, or other side effect runs during init. Do NOT tell the user to restart or run doctor — neither is part of onboarding.

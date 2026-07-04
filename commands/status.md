@@ -9,5 +9,5 @@ Render the HW progress surface. Read-only; never mutates run state.
 3. Integrity warnings (each is actionable, plain language):
    - `runs/ACTIVE` exists but no event in >30 min → "run may be stalled or ACTIVE is stale; check /workflows, or remove runs/ACTIVE if nothing is running."
    - A `MERGE_TOKEN` exists with no active merge phase → "leftover merge token blocks nothing but indicates an interrupted merge — investigate before merging."
-   - Installed workflow file hash differs from `${CLAUDE_PLUGIN_ROOT}/workflows/` source mid-run → "engine changed mid-run: the prefix cache for this run is invalid; finish or restart the run."
+   - A project-local `.claude/workflows/` engine override exists whose hash changed mid-run (or diverges from `${CLAUDE_PLUGIN_ROOT}/workflows/`) → "engine changed mid-run: the prefix cache for this run is invalid; finish or restart the run."
 4. If no active run: show the last completed run's tricolor one-liner, sentinel baseline age, and the router table's last 3 measured entries.

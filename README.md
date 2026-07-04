@@ -9,15 +9,20 @@ Evidence-factory orchestration for Claude Code. Every claim is machine-verified 
 /plugin install hw@hyperworkflows
 ```
 
-Or for local development: `claude --plugin-dir /path/to/hyperworkflows`
-
-Then, inside your project:
+**That's it — zero setup.** Engines, hooks, agents, and skills ship with the plugin; `runs/` and `memory/` are created lazily on first use. Open any project and go:
 
 ```
-/hw:init        # install workflow engines + blackboard (idempotent)
-# restart the session (hooks activate next session — platform property)
-/hw:doctor      # verify every platform assumption with evidence
+/hw:audit               # evidence-grade audit of your changed files (or pass a scope)
 ```
+
+For local development: `claude --plugin-dir /path/to/hyperworkflows`
+
+Optional (never required):
+
+- `/hw:doctor` — troubleshooting: verifies every platform assumption with evidence
+- `/hw:init` — only if you want project-local engine copies or to pre-seed baselines
+
+One platform note (applies to every plugin, not just HW): hooks register at session start, so the command deny wall becomes active from the next session after first install. Everything else works immediately.
 
 ## Commands
 
@@ -30,7 +35,7 @@ Then, inside your project:
 | `/hw:recheck [run]` | Re-run every recorded evidence command, diff exit codes — zero LLM calls |
 | `/hw:status` | One progress surface: done/total, measured rate, ETA with arithmetic shown |
 | `/hw:ratchet [run]` | Record measured run stats to the router table; distill candidates |
-| `/hw:init` / `/hw:doctor` | Setup and platform verification |
+| `/hw:init` / `/hw:doctor` | Optional: project-local engine copies / evidence-backed troubleshooting |
 
 ## What makes it different
 
