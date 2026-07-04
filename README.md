@@ -60,6 +60,23 @@ adapters/         universal installer for every mainstream coding agent (see bel
 test/             node:test suite for every deterministic component
 ```
 
+## Enforcement ladder (E0–E3)
+
+Discipline that must be remembered gets skipped exactly when it matters most. Hyperworkflows enforces by default — but with consent scoping and honest gates (full analysis: [`enforcement-design.md`](enforcement-design.md)):
+
+| Level | Scope | What it does |
+|---|---|---|
+| **E0 Ambient** | every session | Short brief: Hyperworkflows exists, formation gate threshold |
+| **E1 Salience** | enforced projects | Operating constitution injected at session start/resume/**compact**; one-line per-turn drumbeat; targeted nudge after test commands (once per session) |
+| **E2 Session gates** | level 2 | **Disclosure-mode Stop gate**: a session that edited files may only end with verdict evidence OR an explicit `UNVERIFIED` disclosure. Never loops (platform one-bounce), never gates Q&A sessions (mutation breadcrumb precondition), fail-open on errors |
+| **E3 CI absolute** | the repository | `ci-verify.mjs` re-executes committed evidence (`evidence/<run-id>/verdicts/`) + validates schemas on every PR. As a required status check it binds **every** agent and human, on every tool |
+
+Configuration (first match wins): `HYPERWORKFLOWS_ENFORCE=0|1|2` env → `.hyperworkflows/enforce` file (`/hyperworkflows:enforce 2`) → default: level 1 in projects with Hyperworkflows markers, level 0 everywhere else.
+
+Install the E3 gate: `/hyperworkflows:enforce ci` (copies `templates/hyperworkflows-verify.yml` + the `.hyperworkflows/` toolkit), then mark it required in branch protection — that single click is what makes it absolute.
+
+The E2 gate enforces the constitution's actual demand — not "verify everything" but "**never present unverified work as verified**". Honest disclosure always satisfies it.
+
 ## Beyond Claude Code: every mainstream coding agent
 
 Claude Code gets the full engine (workflows, agent fleet, hooks). Every other tool gets the portable core — `.hyperworkflows/` toolkit (script-computed verdicts + zero-LLM recheck), the Hyperworkflows operating rules in the tool's native rules surface, and native commands where the tool supports them:

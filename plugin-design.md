@@ -153,8 +153,14 @@ Shipped in `workflows/` and auto-registered by the plugin (W1 verified); optiona
 | `SessionStart` | `session-brief.sh` | Injects <50 lines: formation table (single threshold: touched <5 → solo unless evidence explicitly demanded), assets index (named workflows, router stats, last sentinel delta) |
 | `SubagentStop` | `sensor.sh` | Appends `{ts, agent, label, outcome}` to `runs/<active>/events.jsonl` — zero-token telemetry |
 | `TaskCompleted` (teams mode) | `task-gate.sh` | Exit 2 if the task claims completion without a corresponding `verdicts/*.json` entry — no evidence, no completion |
+| `UserPromptSubmit` | `drumbeat.sh` | E1: one-line per-turn salience in enforced projects (recency beats volume; never blocks) |
+| `PostToolUse` (matcher: Bash) | `nudge.sh` | E1: after test/lint-looking commands, once per session: adjudicate exit codes via script, don't eyeball |
+| `PostToolUse` (matcher: Edit\|Write\|MultiEdit\|NotebookEdit) | `mutation-sensor.sh` | E2: per-session mutation breadcrumb (`runs/.sessions/<sid>.mutated`) — the Stop gate's precondition |
+| `Stop` | `stop-gate.sh` | E2 (level >= 2): disclosure-mode gate — mutated session may end only with verdict evidence or an explicit UNVERIFIED disclosure; one-bounce via `stop_hook_active`; fail-open on any error |
 
-Hook changes take effect next session (P6): `/hyperworkflows:doctor` states this explicitly and `/hyperworkflows:init` ends with "restart session, then run /hyperworkflows:doctor".
+Enforcement levels resolve via `lib-enforce.sh`: `HYPERWORKFLOWS_ENFORCE` env → `.hyperworkflows/enforce` file → marker-based default (1 if `.hyperworkflows/` / `memory/router.md` / `evidence/` present, else 0). The E3 CI gate (`scripts/ci-verify.mjs` + `templates/hyperworkflows-verify.yml`, installed by `/hyperworkflows:enforce ci`) is documented in `enforcement-design.md`.
+
+Hook changes take effect next session (P6) — the one platform latency Hyperworkflows cannot remove; `/hyperworkflows:doctor` and `/hyperworkflows:enforce` state it wherever relevant.
 
 ### 3.5 Skills (methodology, loaded on demand)
 

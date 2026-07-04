@@ -1,7 +1,7 @@
 {
   "name": "hyperworkflows",
   "displayName": "Hyperworkflows",
-  "version": "0.5.0",
+  "version": "0.6.0",
   "description": "Evidence-factory orchestration for Claude Code: machine-verified findings (exit codes, not LLM opinion), full-coverage adversarial audits, N-version tournament delivery, and reports you can re-verify with zero LLM calls.",
   "author": { "name": "aezizhu", "url": "https://github.com/aezizhu" },
   "homepage": "https://github.com/aezizhu/hyperworkflows",
