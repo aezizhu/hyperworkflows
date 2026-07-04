@@ -42,6 +42,8 @@ Every report footer includes:
 `Re-verify without any LLM: node .hyperworkflows/recheck.mjs runs/<run-id>`
 and the honesty note that producer and verifier may share a model family.
 
+Teams can make this absolute in CI: commit evidence to `evidence/<run-id>/verdicts/` and gate PRs with `node .hyperworkflows/ci-verify.mjs --dir evidence --require` as a required status check — model-independent and tool-independent enforcement.
+
 ## Roles
 
 When delegating to subagents/tasks, use the role contracts in `.hyperworkflows/role-prompts.md` verbatim (verifier gets commands only — never your reasoning).

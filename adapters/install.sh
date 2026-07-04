@@ -30,6 +30,7 @@ install_core() {
   mkdir -p "$TARGET/.hyperworkflows"
   cp "$ROOT/scripts/adjudicate.mjs" "$TARGET/.hyperworkflows/adjudicate.mjs"
   cp "$ROOT/scripts/recheck.mjs" "$TARGET/.hyperworkflows/recheck.mjs"
+  cp "$ROOT/scripts/ci-verify.mjs" "$TARGET/.hyperworkflows/ci-verify.mjs"
   cp "$CORE/rules.md" "$TARGET/.hyperworkflows/rules.md"
   OUT="$TARGET/.hyperworkflows/role-prompts.md"
   {

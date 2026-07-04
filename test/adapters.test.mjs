@@ -29,7 +29,7 @@ const EXPECT = {
   devin: [".devin/skills/hyperworkflows-oracle-forging/SKILL.md", ".devin/hyperworkflows-role-prompts.md"]
 };
 
-const CORE = [".hyperworkflows/adjudicate.mjs", ".hyperworkflows/recheck.mjs", ".hyperworkflows/rules.md", ".hyperworkflows/role-prompts.md"];
+const CORE = [".hyperworkflows/adjudicate.mjs", ".hyperworkflows/recheck.mjs", ".hyperworkflows/ci-verify.mjs", ".hyperworkflows/rules.md", ".hyperworkflows/role-prompts.md"];
 const MARKED = ["AGENTS.md", "GEMINI.md", "QWEN.md", "WARP.md", ".rules", "CONVENTIONS.md", ".junie/guidelines.md", ".github/copilot-instructions.md"];
 
 function installTwice(tool, dir) {

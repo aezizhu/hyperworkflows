@@ -1,8 +1,9 @@
 #!/usr/bin/env node
 // Hyperworkflows recheck: re-execute every recorded evidence command and diff exit codes.
-// Zero LLM calls — this is what makes an Hyperworkflows report falsifiable (constitution C4).
+// Zero LLM calls — this is what makes a Hyperworkflows report falsifiable (constitution C4).
 //
-// Usage: node recheck.mjs <runs/<run-id> | verdicts-dir> [--cwd <repo-root>] [--timeout <seconds>]
+// CLI:    node recheck.mjs <runs/<run-id> | verdicts-dir> [--cwd <repo-root>] [--timeout <seconds>]
+// Module: import { runRecheck } from "./recheck.mjs"   (used by ci-verify.mjs)
 // Exit codes: 0 = all evidence reproduces; 1 = drift detected; 2 = usage/IO error.
 //
 // Canonical verdict file schema (runs/<id>/verdicts/*.json):
@@ -15,56 +16,64 @@
 import { readdirSync, readFileSync, existsSync, statSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { spawnSync } from "node:child_process";
+import { fileURLToPath } from "node:url";
 
-function usage(msg) {
-  if (msg) console.error(`recheck: ${msg}`);
-  console.error("usage: node recheck.mjs <runs/<run-id> | verdicts-dir> [--cwd <repo-root>] [--timeout <seconds>]");
-  process.exit(2);
-}
-
-const argv = process.argv.slice(2);
-if (!argv.length) usage();
-let target = null, cwd = process.cwd(), timeoutSec = 120;
-for (let i = 0; i < argv.length; i++) {
-  if (argv[i] === "--cwd") cwd = resolve(argv[++i]);
-  else if (argv[i] === "--timeout") timeoutSec = Number(argv[++i]) || 120;
-  else if (!target) target = argv[i];
-  else usage(`unexpected argument: ${argv[i]}`);
-}
-if (!target) usage("missing target directory");
-
-let dir = resolve(target);
-if (existsSync(join(dir, "verdicts"))) dir = join(dir, "verdicts");
-if (!existsSync(dir) || !statSync(dir).isDirectory()) usage(`not a directory: ${dir}`);
-
-const files = readdirSync(dir).filter(f => f.endsWith(".json")).sort();
-if (!files.length) usage(`no verdict files in ${dir}`);
-
-let checked = 0, matched = 0;
-const drifts = [], errors = [];
-
-for (const f of files) {
-  let v;
-  try { v = JSON.parse(readFileSync(join(dir, f), "utf8")); }
-  catch (e) { errors.push({ file: f, error: `unparseable JSON: ${e.message}` }); continue; }
-  for (const p of v.probes || []) {
-    checked++;
-    // Sequential, shell-executed, per-command timeout. Determinism over speed.
-    const r = spawnSync(p.cmd, { shell: true, cwd, timeout: timeoutSec * 1000, stdio: ["ignore", "ignore", "ignore"] });
-    const actual = r.error && r.error.code === "ETIMEDOUT" ? "TIMEOUT" : (r.status === null ? "KILLED" : r.status);
-    const recorded = p.exit;
-    if (actual === recorded) { matched++; }
-    else drifts.push({ file: f, unit: v.unit, cmd: p.cmd, recorded, actual, expect_exit: p.expect_exit });
+// Re-execute all evidence under a run dir (or a bare verdicts dir).
+// Returns the report object; throws Error with .usage=true on bad input.
+export function runRecheck(target, { cwd = process.cwd(), timeoutSec = 120 } = {}) {
+  let dir = resolve(target);
+  if (existsSync(join(dir, "verdicts"))) dir = join(dir, "verdicts");
+  if (!existsSync(dir) || !statSync(dir).isDirectory()) {
+    const e = new Error(`not a directory: ${dir}`); e.usage = true; throw e;
   }
+  const files = readdirSync(dir).filter(f => f.endsWith(".json")).sort();
+  if (!files.length) { const e = new Error(`no verdict files in ${dir}`); e.usage = true; throw e; }
+
+  let checked = 0, matched = 0;
+  const drifts = [], errors = [];
+  for (const f of files) {
+    let v;
+    try { v = JSON.parse(readFileSync(join(dir, f), "utf8")); }
+    catch (e) { errors.push({ file: f, error: `unparseable JSON: ${e.message}` }); continue; }
+    for (const p of v.probes || []) {
+      checked++;
+      // Sequential, shell-executed, per-command timeout. Determinism over speed.
+      const r = spawnSync(p.cmd, { shell: true, cwd, timeout: timeoutSec * 1000, stdio: ["ignore", "ignore", "ignore"] });
+      const actual = r.error && r.error.code === "ETIMEDOUT" ? "TIMEOUT" : (r.status === null ? "KILLED" : r.status);
+      if (actual === p.exit) { matched++; }
+      else drifts.push({ file: f, unit: v.unit, cmd: p.cmd, recorded: p.exit, actual, expect_exit: p.expect_exit });
+    }
+  }
+  return {
+    dir, cwd, checked, matched,
+    drifted: drifts.length, unparseable: errors.length,
+    drifts, errors,
+    conclusion: drifts.length === 0 && errors.length === 0
+      ? "ALL EVIDENCE REPRODUCES — the report still holds at this working tree."
+      : "DRIFT DETECTED — the report's evidence no longer reproduces; treat affected claims as stale."
+  };
 }
 
-const report = {
-  dir, cwd, checked, matched,
-  drifted: drifts.length, unparseable: errors.length,
-  drifts, errors,
-  conclusion: drifts.length === 0 && errors.length === 0
-    ? "ALL EVIDENCE REPRODUCES — the report still holds at this working tree."
-    : "DRIFT DETECTED — the report's evidence no longer reproduces; treat affected claims as stale."
-};
-process.stdout.write(JSON.stringify(report, null, 2) + "\n");
-process.exit(drifts.length || errors.length ? 1 : 0);
+// ---------------------------------------------------------------- CLI ------
+if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) {
+  const usage = (msg) => {
+    if (msg) console.error(`recheck: ${msg}`);
+    console.error("usage: node recheck.mjs <runs/<run-id> | verdicts-dir> [--cwd <repo-root>] [--timeout <seconds>]");
+    process.exit(2);
+  };
+  const argv = process.argv.slice(2);
+  if (!argv.length) usage();
+  let target = null, cwd = process.cwd(), timeoutSec = 120;
+  for (let i = 0; i < argv.length; i++) {
+    if (argv[i] === "--cwd") cwd = resolve(argv[++i]);
+    else if (argv[i] === "--timeout") timeoutSec = Number(argv[++i]) || 120;
+    else if (!target) target = argv[i];
+    else usage(`unexpected argument: ${argv[i]}`);
+  }
+  if (!target) usage("missing target directory");
+  let report;
+  try { report = runRecheck(target, { cwd, timeoutSec }); }
+  catch (e) { if (e.usage) usage(e.message); else throw e; }
+  process.stdout.write(JSON.stringify(report, null, 2) + "\n");
+  process.exit(report.drifted || report.unparseable ? 1 : 0);
+}

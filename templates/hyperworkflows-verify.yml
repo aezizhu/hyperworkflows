@@ -1,0 +1,29 @@
+# Hyperworkflows E3 gate — absolute, model-independent enforcement.
+# Copy to .github/workflows/hyperworkflows-verify.yml in your repository
+# (the /hyperworkflows:enforce command does this for you), then make
+# "hyperworkflows-verify / evidence" a required status check in branch
+# protection. From that point, no PR merges without committed, re-executable
+# evidence — regardless of which coding agent (or human) produced it.
+#
+# Prerequisite: the portable toolkit at .hyperworkflows/ (ci-verify.mjs,
+# recheck.mjs, adjudicate.mjs), installed by adapters/install.sh or
+# /hyperworkflows:enforce ci.
+#
+# Soft-start: remove `--require` to pass with a notice while the team ramps up.
+
+name: hyperworkflows-verify
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  evidence:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Re-execute committed evidence (zero LLM calls)
+        run: node .hyperworkflows/ci-verify.mjs --dir evidence --require

@@ -92,6 +92,26 @@ export function slug(s) {
   return String(s).replace(/[^a-zA-Z0-9._-]/g, "_");
 }
 
+// --- validateVerdict(v) -> { ok, errors, warnings } --------------------------------
+// Canonical verdict schema check. Core fields are errors (CI-fatal); metadata
+// fields are warnings (reported, non-fatal).
+export function validateVerdict(v) {
+  const errors = [], warnings = [];
+  if (!v || typeof v !== "object") return { ok: false, errors: ["not an object"], warnings };
+  if (typeof v.unit !== "string" || !v.unit) errors.push("unit: required string");
+  if (typeof v.verdict !== "string" || !v.verdict) errors.push("verdict: required string");
+  if (!Array.isArray(v.probes) || v.probes.length === 0) errors.push("probes: required non-empty array");
+  else v.probes.forEach((p, i) => {
+    if (!p || typeof p.cmd !== "string" || !p.cmd) errors.push(`probes[${i}].cmd: required string`);
+    if (typeof p.expect_exit !== "number") errors.push(`probes[${i}].expect_exit: required number`);
+    if (typeof p.exit !== "number") errors.push(`probes[${i}].exit: required number (raw recorded exit)`);
+  });
+  for (const f of ["head", "depth", "ts", "agent_label"]) {
+    if (typeof v[f] !== "string" || !v[f]) warnings.push(`${f}: missing (metadata)`);
+  }
+  return { ok: errors.length === 0, errors, warnings };
+}
+
 // --- buildTricolor(results, allUnits, crosscut) -> report -------------------------
 // results: [{ meta, verdict: { pass, results, failures }, status?, depth? }]
 // Constitution C4: verified / done-unverified / quarantined + grey, with coverage math.

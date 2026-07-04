@@ -17,5 +17,6 @@ Deliver a human-approved change plan. Argument: `$ARGUMENTS` (path to the plan; 
 **Persist & render**
 6. Persist verdict files for every group (canonical schema, including the post-merge full-suite exit codes as probes). Write `report.md` + `report.json`.
 7. Render the verdict card as tricolor: MERGED-VERIFIED (with suite exit codes) / QUARANTINED (STUCK or FLAKY-ORACLE, each with its failure signature and last failing commands) / NOT-ATTEMPTED. A quarantined group is never counted as delivered — state plainly what failed and what the human can do (retry with N=5, send to court, or drop).
-8. Remove `runs/ACTIVE` (the workflow removes MERGE_TOKEN itself after each merge; confirm none is left behind — a leftover token is a bug, report it).
-9. Footer: recheck command line for this run.
+8. E3 evidence convention: if an `evidence/` directory exists at the repo root, copy `runs/<run_id>/verdicts/` and `report.md` to `evidence/<run_id>/` so the delivery's evidence ships with the PR and CI can re-execute it.
+9. Remove `runs/ACTIVE` (the workflow removes MERGE_TOKEN itself after each merge; confirm none is left behind — a leftover token is a bug, report it).
+10. Footer: recheck command line for this run.
