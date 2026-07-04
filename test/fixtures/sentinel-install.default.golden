@@ -1,0 +1,20 @@
+=== Option A: macOS LaunchAgent (recommended on this machine) ===
+Run: <SCRIPT> --install-launchd   (writes <HOME>/Library/LaunchAgents/com.hyperworkflows.sentinel.plist)
+
+=== Option B: crontab line ===
+30 2 * * * cd "<REPO_DIR>" && "<CLAUDE_BIN>" -p "/hyperworkflows:sentinel nightly" --output-format json --max-turns 200 >> runs/sentinel-nightly.log 2>&1
+
+=== Option C: GitHub Actions (runs in CI, needs ANTHROPIC_API_KEY secret) ===
+name: hypersentinel-nightly
+on:
+  schedule:
+    - cron: "30 18 * * *"   # 02:30 Asia/Singapore == 18:30 UTC
+jobs:
+  sentinel:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: npm install -g @anthropic-ai/claude-code
+      - run: CLAUDE_CODE_PRINT_BG_WAIT_CEILING_MS=0 claude -p "/hyperworkflows:sentinel nightly" --output-format json --max-turns 200
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
