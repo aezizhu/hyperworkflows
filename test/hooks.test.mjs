@@ -14,7 +14,7 @@ function hook(script, payload, cwd) {
   return { code: r.status, err: r.stderr };
 }
 const bash = cmd => ({ tool_input: { command: cmd } });
-const tmp = () => mkdtempSync(join(tmpdir(), "hw-hook-"));
+const tmp = () => mkdtempSync(join(tmpdir(), "hyperworkflows-hook-"));
 
 test("guard: blocks force push variants", () => {
   const dir = tmp();
@@ -72,13 +72,13 @@ test("guard: malformed payload never blocks (fail-open for the deny wall parser)
 test("sensor: appends a journal line only when a run is active", () => {
   const dir = tmp();
   try {
-    assert.equal(hook("sensor.sh", { hook_event_name: "SubagentStop", agent_type: "hw-verifier" }, dir).code, 0);
+    assert.equal(hook("sensor.sh", { hook_event_name: "SubagentStop", agent_type: "hyperworkflows-verifier" }, dir).code, 0);
     assert.equal(existsSync(join(dir, "runs")), false); // inert without ACTIVE
     mkdirSync(join(dir, "runs", "r1"), { recursive: true });
     writeFileSync(join(dir, "runs", "ACTIVE"), "r1");
-    assert.equal(hook("sensor.sh", { hook_event_name: "SubagentStop", agent_type: "hw-verifier", agent_id: "x1" }, dir).code, 0);
+    assert.equal(hook("sensor.sh", { hook_event_name: "SubagentStop", agent_type: "hyperworkflows-verifier", agent_id: "x1" }, dir).code, 0);
     const line = JSON.parse(readFileSync(join(dir, "runs", "r1", "events.jsonl"), "utf8").trim());
-    assert.equal(line.agent, "hw-verifier");
+    assert.equal(line.agent, "hyperworkflows-verifier");
     assert.match(line.ts, /\+08:00$/); // Asia/Singapore journal timestamps
   } finally { rmSync(dir, { recursive: true, force: true }); }
 });
@@ -109,6 +109,6 @@ test("session-brief: renders under 50 lines and flags active runs", () => {
     const r = spawnSync("sh", [join(SCRIPTS, "session-brief.sh")], { cwd: dir, encoding: "utf8" });
     assert.equal(r.status, 0);
     assert.ok(r.stdout.split("\n").length < 50);
-    assert.match(r.stdout, /ACTIVE HW RUN: r9/);
+    assert.match(r.stdout, /ACTIVE Hyperworkflows RUN: r9/);
   } finally { rmSync(dir, { recursive: true, force: true }); }
 });

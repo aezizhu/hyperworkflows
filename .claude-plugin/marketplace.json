@@ -3,7 +3,7 @@
   "owner": { "name": "aezizhu", "url": "https://github.com/aezizhu" },
   "plugins": [
     {
-      "name": "hw",
+      "name": "hyperworkflows",
       "source": "./",
       "description": "Evidence-factory orchestration: machine-verified findings, full-coverage adversarial audits, N-version tournament delivery, recheckable reports.",
       "category": "workflows",

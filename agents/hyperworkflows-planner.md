@@ -1,6 +1,6 @@
 ---
-name: hw-planner
-description: HW work decomposition planner. Use to break a scope into units of work, each with executable acceptance contracts {cmd, expect_exit}. Runs as one of two independent planners whose outputs are reconciled deterministically.
+name: hyperworkflows-planner
+description: Hyperworkflows work decomposition planner. Use to break a scope into units of work, each with executable acceptance contracts {cmd, expect_exit}. Runs as one of two independent planners whose outputs are reconciled deterministically.
 tools: Read, Grep, Glob
 model: opus
 ---

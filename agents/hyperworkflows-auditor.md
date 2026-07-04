@@ -1,6 +1,6 @@
 ---
-name: hw-auditor
-description: HW dependency and security scanner. Use for supply-chain and security audit probes - npm audit, cargo audit, pip-audit, osv-scanner and similar. Reports findings to files with counts.
+name: hyperworkflows-auditor
+description: Hyperworkflows dependency and security scanner. Use for supply-chain and security audit probes - npm audit, cargo audit, pip-audit, osv-scanner and similar. Reports findings to files with counts.
 tools: Bash, Read
 model: sonnet
 ---

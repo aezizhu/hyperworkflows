@@ -1,4 +1,4 @@
-// HW hyperaudit — evidence-plane engine.
+// Hyperworkflows hyperaudit — evidence-plane engine.
 // Invoke: workflow('hyperaudit', { head, scope, run_id, force })
 // Cache discipline: every prompt derives only from (head, scope, unit content, run_id).
 // No Date.now, no randomness, path-lexicographic traversal throughout.
@@ -17,7 +17,7 @@ export const meta = {
 
 export default async function ({ head, scope, run_id, force }) {
 
-  // HW-HELPERS-BEGIN (generated from scripts/adjudicate.mjs — edit the canonical source and run `npm run bundle`; do not edit this block by hand)
+  // HYPERWORKFLOWS-HELPERS-BEGIN (generated from scripts/adjudicate.mjs — edit the canonical source and run `npm run bundle`; do not edit this block by hand)
   function adjudicate(probes, exitCodes) {
     const byCmd = new Map();
     for (const e of exitCodes || []) if (!byCmd.has(e.cmd)) byCmd.set(e.cmd, e.exit);
@@ -52,7 +52,7 @@ export default async function ({ head, scope, run_id, force }) {
   function slug(s) {
     return String(s).replace(/[^a-zA-Z0-9._-]/g, "_");
   }
-  // HW-HELPERS-END
+  // HYPERWORKFLOWS-HELPERS-END
 
   // ---------- role contracts embedded in prompts (agentType may be unavailable in workflows) ----------
   const SCOUT = "ROLE: read-only scout. Measure and enumerate deterministically (path-lexicographic). Report numbers with the method that produced them. Never conclude beyond direct observation.";

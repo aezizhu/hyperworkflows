@@ -1,6 +1,6 @@
 ---
-name: hw-verifier
-description: HW verification executor. Use to run acceptance or repro commands and report raw exit codes verbatim. Never modifies anything, never interprets results. The constitution C2 executor.
+name: hyperworkflows-verifier
+description: Hyperworkflows verification executor. Use to run acceptance or repro commands and report raw exit codes verbatim. Never modifies anything, never interprets results. The constitution C2 executor.
 tools: Bash, Read
 model: sonnet
 maxTurns: 10

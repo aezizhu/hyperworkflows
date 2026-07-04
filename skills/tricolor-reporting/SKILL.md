@@ -1,11 +1,11 @@
 ---
 name: tricolor-reporting
-description: Use when rendering any HW result to a human - the mandatory report format with verified/unverified/quarantined+grey buckets, coverage arithmetic, and evidence links.
+description: Use when rendering any Hyperworkflows result to a human - the mandatory report format with verified/unverified/quarantined+grey buckets, coverage arithmetic, and evidence links.
 ---
 
 # Tricolor Reporting
 
-Every HW deliverable is a tricolor report. No other final format exists.
+Every Hyperworkflows deliverable is a tricolor report. No other final format exists.
 
 **The three buckets (constitution C4):**
 1. **VERIFIED** — machine-adjudicated green. Each item links its `verdicts/*.json` (raw exit codes) and states its depth (D0 acceptance / D1 attack-survived / D2 mutation-hardened / D3 differential / D4 bench-clean).

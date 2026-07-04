@@ -7,11 +7,11 @@ Deliver a human-approved change plan. Argument: `$ARGUMENTS` (path to the plan; 
 
 **Preconditions**
 1. The plan MUST be human-approved. If the plan file has no approval marker and the human has not confirmed in this conversation, show the plan summary and ask first — this is the one gate that is never skipped.
-2. `head` = `git rev-parse --short HEAD`; `run_id` = `hw-apply-<head>`. Create `runs/<run_id>/verdicts/` (mkdir -p), write `runs/ACTIVE`.
+2. `head` = `git rev-parse --short HEAD`; `run_id` = `apply-<head>`. Create `runs/<run_id>/verdicts/` (mkdir -p), write `runs/ACTIVE`.
 3. Initiation card: groups/units to deliver, tournament size (N=3 default, N=5 if the plan marks a group critical), merge discipline (single merger, serial, full suite per merge). Proceed without waiting.
 
 **Execute**
-4. Run the engine shipped with this plugin: prefer the plugin-registered `hyperapply` workflow if invocable by name; otherwise read `${CLAUDE_PLUGIN_ROOT}/workflows/hyperapply.js` and execute it as a dynamic workflow with `{head, plan_path, run_id}`. (A project-local copy from optional `/hw:init` takes precedence.)
+4. Run the engine shipped with this plugin: prefer the plugin-registered `hyperapply` workflow if invocable by name; otherwise read `${CLAUDE_PLUGIN_ROOT}/workflows/hyperapply.js` and execute it as a dynamic workflow with `{head, plan_path, run_id}`. (A project-local copy from optional `/hyperworkflows:init` takes precedence.)
 5. Milestones per level: groups done/total, entries green per group, repair rounds used. Asia/Singapore timestamps, measured-rate ETA.
 
 **Persist & render**

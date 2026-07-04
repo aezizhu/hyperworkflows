@@ -1,6 +1,6 @@
 ---
-name: hw-bisector
-description: HW regression localizer. Use when a sentinel run finds a new regression - runs git bisect with an executable predicate to find the culprit commit. Works in an isolated worktree.
+name: hyperworkflows-bisector
+description: Hyperworkflows regression localizer. Use when a sentinel run finds a new regression - runs git bisect with an executable predicate to find the culprit commit. Works in an isolated worktree.
 tools: Bash, Read
 model: sonnet
 isolation: worktree

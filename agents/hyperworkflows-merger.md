@@ -1,6 +1,6 @@
 ---
-name: hw-merger
-description: HW single merger. The ONLY agent that merges tournament-winner branches into the integration branch - serial merges, full suite after every merge, MERGE_TOKEN protocol. Use exclusively in the hyperapply merge phase.
+name: hyperworkflows-merger
+description: Hyperworkflows single merger. The ONLY agent that merges tournament-winner branches into the integration branch - serial merges, full suite after every merge, MERGE_TOKEN protocol. Use exclusively in the hyperapply merge phase.
 tools: Bash, Read, Edit
 model: opus
 ---

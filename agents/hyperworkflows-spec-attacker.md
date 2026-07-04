@@ -1,6 +1,6 @@
 ---
-name: hw-spec-attacker
-description: HW contract attacker. Use before any build or analysis to find missing acceptance dimensions in unit contracts - performance, security, concurrency, boundary semantics, i18n. Attacks the spec itself, not the code.
+name: hyperworkflows-spec-attacker
+description: Hyperworkflows contract attacker. Use before any build or analysis to find missing acceptance dimensions in unit contracts - performance, security, concurrency, boundary semantics, i18n. Attacks the spec itself, not the code.
 tools: Read, Grep, Glob
 model: opus
 ---

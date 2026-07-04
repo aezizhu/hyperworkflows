@@ -1,5 +1,5 @@
 #!/bin/sh
-# HW sentinel scheduler installer. Prints schedule definitions by default (safe);
+# Hyperworkflows sentinel scheduler installer. Prints schedule definitions by default (safe);
 # writes the macOS LaunchAgent only with an explicit --install-launchd.
 #
 # Usage:
@@ -24,7 +24,7 @@ cat <<EOF
   <array>
     <string>/bin/sh</string>
     <string>-c</string>
-    <string>cd "$REPO_DIR" &amp;&amp; "$CLAUDE_BIN" -p "/hw:sentinel nightly" --output-format json --max-turns 200 >> runs/sentinel-nightly.log 2>&amp;1</string>
+    <string>cd "$REPO_DIR" &amp;&amp; "$CLAUDE_BIN" -p "/hyperworkflows:sentinel nightly" --output-format json --max-turns 200 >> runs/sentinel-nightly.log 2>&amp;1</string>
   </array>
   <key>StartCalendarInterval</key>
   <dict><key>Hour</key><integer>2</integer><key>Minute</key><integer>30</integer></dict>
@@ -49,11 +49,11 @@ echo "=== Option A: macOS LaunchAgent (recommended on this machine) ==="
 echo "Run: $0 --install-launchd   (writes $PLIST_PATH)"
 echo
 echo "=== Option B: crontab line ==="
-echo "30 2 * * * cd \"$REPO_DIR\" && \"$CLAUDE_BIN\" -p \"/hw:sentinel nightly\" --output-format json --max-turns 200 >> runs/sentinel-nightly.log 2>&1"
+echo "30 2 * * * cd \"$REPO_DIR\" && \"$CLAUDE_BIN\" -p \"/hyperworkflows:sentinel nightly\" --output-format json --max-turns 200 >> runs/sentinel-nightly.log 2>&1"
 echo
 echo "=== Option C: GitHub Actions (runs in CI, needs ANTHROPIC_API_KEY secret) ==="
 cat <<'YAML'
-name: hw-sentinel-nightly
+name: hypersentinel-nightly
 on:
   schedule:
     - cron: "30 18 * * *"   # 02:30 Asia/Singapore == 18:30 UTC
@@ -63,7 +63,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - run: npm install -g @anthropic-ai/claude-code
-      - run: claude -p "/hw:sentinel nightly" --output-format json --max-turns 200
+      - run: claude -p "/hyperworkflows:sentinel nightly" --output-format json --max-turns 200
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
 YAML

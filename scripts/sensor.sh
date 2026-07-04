@@ -1,5 +1,5 @@
 #!/bin/sh
-# HW SubagentStop sensor: zero-token telemetry. Appends one JSON line per subagent stop
+# Hyperworkflows SubagentStop sensor: zero-token telemetry. Appends one JSON line per subagent stop
 # to the active run's journal. Never blocks, never fails the session.
 
 [ -f runs/ACTIVE ] || exit 0

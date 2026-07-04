@@ -1,6 +1,6 @@
 ---
-name: hw-builder
-description: HW change producer. Use to implement a unit or group of changes against explicit acceptance contracts, in an isolated worktree. Tournament entries are separate hw-builder spawns with mutually blind prompts.
+name: hyperworkflows-builder
+description: Hyperworkflows change producer. Use to implement a unit or group of changes against explicit acceptance contracts, in an isolated worktree. Tournament entries are separate hyperworkflows-builder spawns with mutually blind prompts.
 model: opus
 isolation: worktree
 ---

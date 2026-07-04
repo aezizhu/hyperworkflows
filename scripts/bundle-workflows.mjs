@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// HW workflow bundler: keeps the deterministic helpers inlined in the workflow
+// Hyperworkflows workflow bundler: keeps the deterministic helpers inlined in the workflow
 // engines byte-identical to their canonical source in scripts/adjudicate.mjs.
 // (The workflow runtime cannot import modules, so helpers must be inlined; this
 // tool makes the duplication mechanical instead of drift-prone.)
@@ -9,9 +9,9 @@
 //   node scripts/bundle-workflows.mjs --write   # regenerate the marker blocks in place
 //
 // Marker block inside each engine's default function:
-//   // HW-HELPERS-BEGIN ...
+//   // HYPERWORKFLOWS-HELPERS-BEGIN ...
 //   <generated function declarations, 2-space indented>
-//   // HW-HELPERS-END
+//   // HYPERWORKFLOWS-HELPERS-END
 
 import { readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
@@ -24,11 +24,11 @@ const CANONICAL = join(ROOT, "scripts", "adjudicate.mjs");
 const MANIFEST = {
   "workflows/hyperaudit.js": ["adjudicate", "reconcileUnits", "sortByPath", "slug"],
   "workflows/hyperapply.js": ["adjudicate", "failureSignature", "selectWinner", "levelsOf", "slug"],
-  "workflows/hw-sentinel.js": ["slug"]
+  "workflows/hypersentinel.js": ["slug"]
 };
 
-const BEGIN = "// HW-HELPERS-BEGIN (generated from scripts/adjudicate.mjs — edit the canonical source and run `npm run bundle`; do not edit this block by hand)";
-const END = "// HW-HELPERS-END";
+const BEGIN = "// HYPERWORKFLOWS-HELPERS-BEGIN (generated from scripts/adjudicate.mjs — edit the canonical source and run `npm run bundle`; do not edit this block by hand)";
+const END = "// HYPERWORKFLOWS-HELPERS-END";
 
 // --- extract `export function name(...) { ... }` bodies with brace matching ---------
 function extractFunctions(source) {

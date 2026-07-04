@@ -2,7 +2,7 @@
 description: One-surface progress digest - active run, ledger counts, throughput, ETA with arithmetic shown
 ---
 
-Render the HW progress surface. Read-only; never mutates run state.
+Render the Hyperworkflows progress surface. Read-only; never mutates run state.
 
 1. Active run: if `runs/ACTIVE` exists, read the run id; check `/workflows` panel state for it if available.
 2. From `runs/<active>/events.jsonl` and `verdicts/`: units adjudicated / total planned, events in the last 10 minutes (measured rate), and ETA computed as remaining ÷ measured rate — SHOW the arithmetic (e.g. "142 remaining ÷ 3.2 units/min ≈ 44 min"), Asia/Singapore timestamps.

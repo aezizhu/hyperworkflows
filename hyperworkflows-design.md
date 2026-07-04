@@ -2,7 +2,7 @@
 
 **Version**: 1.0
 **Date**: 2026-07-04 (Asia/Singapore)
-**Companion document**: `hw-plugin-design.md` (packaging of this architecture as the `hw` Claude Code plugin)
+**Companion document**: `plugin-design.md` (packaging of this architecture as the `hyperworkflows` Claude Code plugin)
 
 ---
 
@@ -176,16 +176,16 @@ The court is the only channel allowed to escalate a genuinely ambiguous item to 
 
 Maximal machinery that requires a manual is failed machinery. Ten guarantees, each backed by a mechanism (never by model goodwill):
 
-1. **Zero-argument entry.** `/hw:audit` with no args infers scope (changed files vs default branch, else whole repo); `/hw:apply` with no args picks up the latest `decision-request.md`. Defaults come from the measured router table, not guesses.
+1. **Zero-argument entry.** `/hyperworkflows:audit` with no args infers scope (changed files vs default branch, else whole repo); `/hyperworkflows:apply` with no args picks up the latest `decision-request.md`. Defaults come from the measured router table, not guesses.
 2. **No mode-selection burden.** The formation gate (§4.1) picks solo/T1/T2 automatically and prints *why* on the initiation card. One-word override (`force`) if the human disagrees.
 3. **Non-blocking by default.** Workflows run in the background; the session stays interactive; the initiation card executes unless vetoed — the human is never a confirmation ferry.
-4. **One progress surface.** Milestones and `/hw:status` show done/total, measured rate, and ETA *with the arithmetic shown*, timestamped Asia/Singapore. No log spelunking.
+4. **One progress surface.** Milestones and `/hyperworkflows:status` show done/total, measured rate, and ETA *with the arithmetic shown*, timestamped Asia/Singapore. No log spelunking.
 5. **Interruption is cheap.** Prefix-cache resume plus per-unit verdict files: a crash or rate-limit never restarts a campaign from zero; the rerun pays only for the un-cached suffix.
 6. **Graceful degradation everywhere.** Every experimental dependency (agent teams, plugin-shipped workflows) has a designed fallback; every degradation is disclosed on the card (C5), never silent.
 7. **Plain-language cards.** Verdict cards state what the human can *do* next (approve / reject / unblock). Failed items name the concrete failing command and its exit code — never internal jargon. A failed unit is never aggregated into a success count.
 8. **Recheckable output.** Any report re-verifies with one command and zero LLM calls (§4.10).
 9. **Safety without friction.** The deny wall blocks genuinely destructive commands only; a blocked command gets the reason plus the safe alternative in the same message.
-10. **Self-diagnosing.** `/hw:doctor` reports exactly which capability is missing, what still works without it, and which fallback engaged.
+10. **Self-diagnosing.** `/hyperworkflows:doctor` reports exactly which capability is missing, what still works without it, and which fallback engaged.
 
 ### 4.1 Formation selection (quality-driven triage)
 
@@ -253,11 +253,11 @@ Resume exists to make *more quality iterations per day* possible. Four disciplin
 1. Units traverse in path-lexicographic order; prompts are built only from `(head, scope, unit content)` — no timestamps, no randomness, no unordered collections.
 2. `head` (short git hash) enters every prompt prefix via `args`: a new commit naturally invalidates stale caches.
 3. Per-unit verdict files stitch runs together across the run-size ceiling and across days.
-4. Scripts are frozen during active runs; `/hw:status` warns if the installed workflow hash changed mid-run (a one-line edit invalidates the entire prefix cache — that is physics, so it is surfaced, not hidden).
+4. Scripts are frozen during active runs; `/hyperworkflows:status` warns if the installed workflow hash changed mid-run (a one-line edit invalidates the entire prefix cache — that is physics, so it is surfaced, not hidden).
 
 ### 4.8 Time plane
 
-`hw-sentinel` modes: **merge** (tests+lint), **nightly 02:30 SGT** (+ dependency audit, mutation, fuzz, bench), **weekly** (+ full asset/fixtures regression). The diff agent reports only the set-difference vs `memory/last-good.json` (fingerprint = suite + normalized location + message hash) — the human sees *new* regressions, never the same wall of known issues. New regressions trigger an auto-bisect phase that localizes the culprit commit and writes a `fix-request.md` ready for `/hw:apply`. `last-good.json` advances only after a verified-green confirmation. The next morning's SessionStart brief injects the overnight delta.
+`hypersentinel` modes: **merge** (tests+lint), **nightly 02:30 SGT** (+ dependency audit, mutation, fuzz, bench), **weekly** (+ full asset/fixtures regression). The diff agent reports only the set-difference vs `memory/last-good.json` (fingerprint = suite + normalized location + message hash) — the human sees *new* regressions, never the same wall of known issues. New regressions trigger an auto-bisect phase that localizes the culprit commit and writes a `fix-request.md` ready for `/hyperworkflows:apply`. `last-good.json` advances only after a verified-green confirmation. The next morning's SessionStart brief injects the overnight delta.
 
 ### 4.9 Self-evolution flywheel
 
@@ -420,10 +420,10 @@ async function verifyToFixpoint(build, g, head, tag) {
 }
 ```
 
-### 5.3 `hw-sentinel.js` — time plane
+### 5.3 `hypersentinel.js` — time plane
 
 ```js
-// Invoke: workflow('hw-sentinel', { head, date, mode })  // injected by the outer routine;
+// Invoke: workflow('hypersentinel', { head, date, mode })  // injected by the outer routine;
 // no Date.now/randomness inside (cache discipline).
 export default async function ({ head, date, mode }) {
 

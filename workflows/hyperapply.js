@@ -1,4 +1,4 @@
-// HW hyperapply — delivery-plane engine.
+// Hyperworkflows hyperapply — delivery-plane engine.
 // Invoke: workflow('hyperapply', { head, plan_path, run_id })
 // plan_path = human-approved change plan (the human gate sits BEFORE this workflow).
 //
@@ -16,7 +16,7 @@ export const meta = {
 
 export default async function ({ head, plan_path, run_id }) {
 
-  // HW-HELPERS-BEGIN (generated from scripts/adjudicate.mjs — edit the canonical source and run `npm run bundle`; do not edit this block by hand)
+  // HYPERWORKFLOWS-HELPERS-BEGIN (generated from scripts/adjudicate.mjs — edit the canonical source and run `npm run bundle`; do not edit this block by hand)
   function adjudicate(probes, exitCodes) {
     const byCmd = new Map();
     for (const e of exitCodes || []) if (!byCmd.has(e.cmd)) byCmd.set(e.cmd, e.exit);
@@ -61,7 +61,7 @@ export default async function ({ head, plan_path, run_id }) {
   function slug(s) {
     return String(s).replace(/[^a-zA-Z0-9._-]/g, "_");
   }
-  // HW-HELPERS-END
+  // HYPERWORKFLOWS-HELPERS-END
 
   const VERIFIER = "ROLE: verifier. Run EXACTLY the commands given, in order. Report every raw exit code verbatim. Never retry, never fix, never interpret, never modify repository files. Verdicts are computed by script, not by you.";
   const BUILDER = "ROLE: builder. Implement to the contract in your isolated worktree. Follow existing repository conventions. Run the acceptance commands yourself before reporting; report branch, files changed, self-observed exit codes. You may be one of several blind tournament entries — commit fully to your approach.";

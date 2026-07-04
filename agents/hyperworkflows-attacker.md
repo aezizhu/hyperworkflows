@@ -1,6 +1,6 @@
 ---
-name: hw-attacker
-description: HW adversarial falsifier. Use to attack a product against its contract - every finding must carry an executable repro command with expected exit code. Also attacks the contract itself for missing dimensions.
+name: hyperworkflows-attacker
+description: Hyperworkflows adversarial falsifier. Use to attack a product against its contract - every finding must carry an executable repro command with expected exit code. Also attacks the contract itself for missing dimensions.
 tools: Read, Grep, Glob, Bash
 model: opus
 isolation: worktree

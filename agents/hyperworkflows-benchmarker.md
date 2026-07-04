@@ -1,6 +1,6 @@
 ---
-name: hw-benchmarker
-description: HW performance comparator. Use to run benchmarks against a recorded baseline and report deltas (verification depth D4). Measures only - never tunes.
+name: hyperworkflows-benchmarker
+description: Hyperworkflows performance comparator. Use to run benchmarks against a recorded baseline and report deltas (verification depth D4). Measures only - never tunes.
 tools: Bash, Read
 model: sonnet
 ---

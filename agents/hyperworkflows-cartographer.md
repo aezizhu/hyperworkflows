@@ -1,6 +1,6 @@
 ---
-name: hw-cartographer
-description: HW resident repository-map expert. Use for architecture questions, module boundaries, dependency topology, and "where does X live" - kept warm across tasks via SendMessage instead of re-exploring each time.
+name: hyperworkflows-cartographer
+description: Hyperworkflows resident repository-map expert. Use for architecture questions, module boundaries, dependency topology, and "where does X live" - kept warm across tasks via SendMessage instead of re-exploring each time.
 tools: Read, Grep, Glob
 model: sonnet
 ---

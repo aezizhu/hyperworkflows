@@ -1,11 +1,11 @@
-// HW sentinel — time-plane engine.
-// Invoke: workflow('hw-sentinel', { head, date, mode, run_id })
+// Hyperworkflows sentinel — time-plane engine.
+// Invoke: workflow('hypersentinel', { head, date, mode, run_id })
 // head/date are injected by the caller; no Date.now/randomness inside (cache discipline).
 // mode: merge (tests+lint) | nightly (+deps, mutation, fuzz, bench) | weekly (+asset regression).
 // Reports ONLY the delta vs memory/last-good.json — the operator never re-reads known failures.
 
 export const meta = {
-  name: "hw-sentinel",
+  name: "hypersentinel",
   description: "Scheduled regression sentinel: probe suites by mode, diff vs last-good baseline, auto-bisect new regressions to culprit commits.",
   phases: ["probe", "diff", "auto-bisect"]
 };
@@ -13,11 +13,11 @@ export const meta = {
 export default async function ({ head, date, mode, run_id }) {
 
   const VERIFIER = "ROLE: verifier. Run the commands, report raw exit codes verbatim, write full output to the log path given. Never fix, never interpret, never modify repository files.";
-  // HW-HELPERS-BEGIN (generated from scripts/adjudicate.mjs — edit the canonical source and run `npm run bundle`; do not edit this block by hand)
+  // HYPERWORKFLOWS-HELPERS-BEGIN (generated from scripts/adjudicate.mjs — edit the canonical source and run `npm run bundle`; do not edit this block by hand)
   function slug(s) {
     return String(s).replace(/[^a-zA-Z0-9._-]/g, "_");
   }
-  // HW-HELPERS-END
+  // HYPERWORKFLOWS-HELPERS-END
 
   const ProbeOut = { type: "object", properties: { exit: { type: "number" }, log_path: { type: "string" }, counts: { type: "object" } }, required: ["exit", "log_path"] };
 

@@ -1,7 +1,7 @@
 #!/bin/sh
-# HW PreToolUse guard (deny wall). Exit 2 blocks the tool call; stderr is fed back to the model.
+# Hyperworkflows PreToolUse guard (deny wall). Exit 2 blocks the tool call; stderr is fed back to the model.
 # Blocks: force pushes, history rewrites, raw device writes, recursive deletes outside
-# sanctioned areas, and merge/push without MERGE_TOKEN while an hw run is active.
+# sanctioned areas, and merge/push without MERGE_TOKEN while an hyperworkflows run is active.
 # Everything else passes untouched (safety without friction).
 
 INPUT=$(cat)
@@ -16,7 +16,7 @@ process.stdin.on("end", () => {
 [ -z "$CMD" ] && exit 0
 
 deny() {
-  printf 'HW guard blocked this command.\nReason: %s\nSafe alternative: %s\n' "$1" "$2" >&2
+  printf 'Hyperworkflows guard blocked this command.\nReason: %s\nSafe alternative: %s\n' "$1" "$2" >&2
   exit 2
 }
 
@@ -45,15 +45,15 @@ case "$CMD" in
     esac ;;
 esac
 
-# MERGE_TOKEN protocol (single-merger discipline) — enforced only while an hw run is active,
-# so normal git flows outside hw runs are never gated.
+# MERGE_TOKEN protocol (single-merger discipline) — enforced only while an hyperworkflows run is active,
+# so normal git flows outside hyperworkflows runs are never gated.
 if [ -f "runs/ACTIVE" ]; then
   RUN_ID=$(cat runs/ACTIVE 2>/dev/null)
   if [ -n "$RUN_ID" ]; then
     case "$CMD" in
       *"git merge"*|*"git push"*)
         if [ ! -f "runs/$RUN_ID/MERGE_TOKEN" ]; then
-          deny "hw run $RUN_ID is active: merge/push requires runs/$RUN_ID/MERGE_TOKEN (single-merger protocol)" "let the hw-merger phase perform the merge; if no run is actually in flight, remove the stale runs/ACTIVE file"
+          deny "hyperworkflows run $RUN_ID is active: merge/push requires runs/$RUN_ID/MERGE_TOKEN (single-merger protocol)" "let the hyperworkflows-merger phase perform the merge; if no run is actually in flight, remove the stale runs/ACTIVE file"
         fi ;;
     esac
   fi

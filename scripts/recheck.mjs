@@ -1,6 +1,6 @@
 #!/usr/bin/env node
-// HW recheck: re-execute every recorded evidence command and diff exit codes.
-// Zero LLM calls — this is what makes an HW report falsifiable (constitution C4).
+// Hyperworkflows recheck: re-execute every recorded evidence command and diff exit codes.
+// Zero LLM calls — this is what makes an Hyperworkflows report falsifiable (constitution C4).
 //
 // Usage: node recheck.mjs <runs/<run-id> | verdicts-dir> [--cwd <repo-root>] [--timeout <seconds>]
 // Exit codes: 0 = all evidence reproduces; 1 = drift detected; 2 = usage/IO error.

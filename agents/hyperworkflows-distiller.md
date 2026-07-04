@@ -1,6 +1,6 @@
 ---
-name: hw-distiller
-description: HW ratchet tail. Use after a completed run to distill the ledger into router stats and skill candidates under memory/. Writes only under memory/ - nothing else.
+name: hyperworkflows-distiller
+description: Hyperworkflows ratchet tail. Use after a completed run to distill the ledger into router stats and skill candidates under memory/. Writes only under memory/ - nothing else.
 tools: Read, Grep, Write
 model: haiku
 maxTurns: 10

@@ -1,6 +1,6 @@
 ---
 name: merge-discipline
-description: Use during any HW delivery merge phase - single-merger protocol, MERGE_TOKEN lifecycle, full-suite gating, and revert-and-quarantine rules.
+description: Use during any Hyperworkflows delivery merge phase - single-merger protocol, MERGE_TOKEN lifecycle, full-suite gating, and revert-and-quarantine rules.
 ---
 
 # Merge Discipline

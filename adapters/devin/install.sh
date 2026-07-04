@@ -1,8 +1,8 @@
 #!/bin/sh
-# HW Devin adapter installer.
+# Hyperworkflows Devin adapter installer.
 # Usage: sh adapters/devin/install.sh /path/to/target/project
-# Copies the five methodology skills to <target>/.devin/skills/hw-*/ and generates
-# <target>/.devin/hw-role-prompts.md from agents/*.md. Idempotent; overwrites only
+# Copies the five methodology skills to <target>/.devin/skills/hyperworkflows-*/ and generates
+# <target>/.devin/hyperworkflows-role-prompts.md from agents/*.md. Idempotent; overwrites only
 # the artifacts it generates.
 
 set -e
@@ -16,17 +16,17 @@ ROOT=$(cd "$HERE/../.." && pwd)
 
 # --- skills ---------------------------------------------------------------
 for s in oracle-forging spec-attack tricolor-reporting adjudication-protocol merge-discipline; do
-  mkdir -p "$TARGET/.devin/skills/hw-$s"
-  cp "$ROOT/skills/$s/SKILL.md" "$TARGET/.devin/skills/hw-$s/SKILL.md"
-  echo "installed skill: .devin/skills/hw-$s/SKILL.md"
+  mkdir -p "$TARGET/.devin/skills/hyperworkflows-$s"
+  cp "$ROOT/skills/$s/SKILL.md" "$TARGET/.devin/skills/hyperworkflows-$s/SKILL.md"
+  echo "installed skill: .devin/skills/hyperworkflows-$s/SKILL.md"
 done
 
 # --- role prompts (frontmatter stripped, contract bodies kept) -------------
-OUT="$TARGET/.devin/hw-role-prompts.md"
+OUT="$TARGET/.devin/hyperworkflows-role-prompts.md"
 {
-  echo "# HW role contracts (generated from agents/*.md — regenerate with adapters/devin/install.sh)"
+  echo "# Hyperworkflows role contracts (generated from agents/*.md — regenerate with adapters/devin/install.sh)"
   echo
-  for f in "$ROOT"/agents/hw-*.md; do
+  for f in "$ROOT"/agents/hyperworkflows-*.md; do
     name=$(basename "$f" .md)
     echo "## $name"
     echo
@@ -37,4 +37,4 @@ OUT="$TARGET/.devin/hw-role-prompts.md"
 } > "$OUT"
 echo "generated: $OUT"
 
-echo "done. Skills live under .devin/skills/hw-*; paste role contracts from hw-role-prompts.md into subagent prompts."
+echo "done. Skills live under .devin/skills/hyperworkflows-*; paste role contracts from hyperworkflows-role-prompts.md into subagent prompts."

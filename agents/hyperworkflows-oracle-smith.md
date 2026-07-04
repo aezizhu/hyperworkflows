@@ -1,6 +1,6 @@
 ---
-name: hw-oracle-smith
-description: HW oracle forger. Use for grey units that lack executable acceptance - builds golden files, property tests, metamorphic relations, or snapshot tests so the unit becomes machine-verifiable. Works in an isolated worktree.
+name: hyperworkflows-oracle-smith
+description: Hyperworkflows oracle forger. Use for grey units that lack executable acceptance - builds golden files, property tests, metamorphic relations, or snapshot tests so the unit becomes machine-verifiable. Works in an isolated worktree.
 model: opus
 isolation: worktree
 ---

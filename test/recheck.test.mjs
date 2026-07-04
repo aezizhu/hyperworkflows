@@ -9,7 +9,7 @@ import { spawnSync } from "node:child_process";
 const RECHECK = join(dirname(fileURLToPath(import.meta.url)), "..", "scripts", "recheck.mjs");
 
 function makeRun(verdicts) {
-  const dir = mkdtempSync(join(tmpdir(), "hw-recheck-"));
+  const dir = mkdtempSync(join(tmpdir(), "hyperworkflows-recheck-"));
   mkdirSync(join(dir, "verdicts"));
   for (const [name, v] of Object.entries(verdicts)) {
     writeFileSync(join(dir, "verdicts", name), JSON.stringify(v));
@@ -50,7 +50,7 @@ test("recheck: drift detected -> exit 1 with the exact command named", () => {
 });
 
 test("recheck: unparseable verdict file is an error, never silently skipped", () => {
-  const dir = mkdtempSync(join(tmpdir(), "hw-recheck-"));
+  const dir = mkdtempSync(join(tmpdir(), "hyperworkflows-recheck-"));
   mkdirSync(join(dir, "verdicts"));
   writeFileSync(join(dir, "verdicts", "bad.json"), "{not json");
   try {

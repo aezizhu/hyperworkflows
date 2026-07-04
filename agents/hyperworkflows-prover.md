@@ -1,6 +1,6 @@
 ---
-name: hw-prover
-description: HW test-strength prover. Use for mutation testing and property campaigns that measure whether the test suite actually catches defects (verification depth D2). Works in an isolated worktree.
+name: hyperworkflows-prover
+description: Hyperworkflows test-strength prover. Use for mutation testing and property campaigns that measure whether the test suite actually catches defects (verification depth D2). Works in an isolated worktree.
 tools: Bash, Read
 model: sonnet
 isolation: worktree

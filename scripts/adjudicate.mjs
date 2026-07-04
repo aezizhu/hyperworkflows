@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// HW deterministic adjudication library + CLI. Node >= 18, zero dependencies.
+// Hyperworkflows deterministic adjudication library + CLI. Node >= 18, zero dependencies.
 // Constitution C2: this is the ONLY place verdicts are computed. LLMs report raw
 // exit codes; these pure functions turn them into verdicts. The same logic is
 // inlined into the workflow engines (the workflow runtime cannot import modules);

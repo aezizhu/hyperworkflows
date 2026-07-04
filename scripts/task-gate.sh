@@ -1,5 +1,5 @@
 #!/bin/sh
-# HW TaskCompleted gate: while a court is in session, a ruling cannot be marked complete
+# Hyperworkflows TaskCompleted gate: while a court is in session, a ruling cannot be marked complete
 # without its evidence file (raw exit codes) on disk. No evidence, no completion.
 # Outside court mode this gate is inert, so normal task usage is never blocked.
 
@@ -19,7 +19,7 @@ process.stdin.on("end", () => {
 [ -z "$TASK_ID" ] && exit 0
 
 if [ ! -f "runs/$RUN_ID/verdicts/task-$TASK_ID.json" ]; then
-  echo "HW court gate: missing evidence file runs/$RUN_ID/verdicts/task-$TASK_ID.json. Execute the repro commands and record raw exit codes to that path before completing this ruling (skeptic duty: run it, don't argue it)." >&2
+  echo "Hyperworkflows court gate: missing evidence file runs/$RUN_ID/verdicts/task-$TASK_ID.json. Execute the repro commands and record raw exit codes to that path before completing this ruling (skeptic duty: run it, don't argue it)." >&2
   exit 2
 fi
 
