@@ -1,0 +1,13 @@
+{
+  "name": "hyperworkflows",
+  "owner": { "name": "aezizhu", "url": "https://github.com/aezizhu" },
+  "plugins": [
+    {
+      "name": "hw",
+      "source": "./",
+      "description": "Evidence-factory orchestration: machine-verified findings, full-coverage adversarial audits, N-version tournament delivery, recheckable reports.",
+      "category": "workflows",
+      "tags": ["verification", "audit", "multi-agent", "orchestration"]
+    }
+  ]
+}

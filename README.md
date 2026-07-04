@@ -1,0 +1,66 @@
+# Hyperworkflows (`hw`)
+
+Evidence-factory orchestration for Claude Code. Every claim is machine-verified (exit codes, not LLM opinion), every audit enumerates its denominator three independent ways, every delivery is an N-version tournament with gated serial merges — and every report can be re-verified later with **zero LLM calls**.
+
+## Install
+
+```
+/plugin marketplace add aezizhu/hyperworkflows
+/plugin install hw@hyperworkflows
+```
+
+Or for local development: `claude --plugin-dir /path/to/hyperworkflows`
+
+Then, inside your project:
+
+```
+/hw:init        # install workflow engines + blackboard (idempotent)
+# restart the session (hooks activate next session — platform property)
+/hw:doctor      # verify every platform assumption with evidence
+```
+
+## Commands
+
+| Command | What it does |
+|---|---|
+| `/hw:audit [scope] [force]` | Full-coverage adversarial audit → adjudicated tricolor report + decision request |
+| `/hw:apply [plan]` | Deliver approved changes: N-version blind tournament, fixpoint repair, gated serial merges |
+| `/hw:court [contested]` | Adjudicate contested items — agent-team court or sequential fallback; rulings need executed evidence |
+| `/hw:sentinel [mode]` | Time plane: merge/nightly/weekly probe suites, delta-vs-last-good, auto-bisect; `install` schedules nightly 02:30 |
+| `/hw:recheck [run]` | Re-run every recorded evidence command, diff exit codes — zero LLM calls |
+| `/hw:status` | One progress surface: done/total, measured rate, ETA with arithmetic shown |
+| `/hw:ratchet [run]` | Record measured run stats to the router table; distill candidates |
+| `/hw:init` / `/hw:doctor` | Setup and platform verification |
+
+## What makes it different
+
+1. **Verdicts are computed by script, never by an LLM.** Verifier agents report raw exit codes; deterministic functions (`scripts/adjudicate.mjs`, inlined in the engines) turn them into verdicts. An LLM structurally cannot overrule a red suite.
+2. **The denominator is defended.** Three independent enumerators, script-reconciled; unresolved disagreement halts the run instead of silently shrinking coverage.
+3. **Missing oracles are work items.** Grey units go to an oracle-smith (golden files, property tests, metamorphic relations) before being accepted as unverifiable.
+4. **Contracts get attacked before code does.** A spec-attacker hunts missing acceptance dimensions (perf, security, concurrency, boundaries) so "all green but wrong" can't ship through contract holes.
+5. **Delivery is a tournament, not a hope.** N mutually blind builders per group; verification after every repair round; correctness-based stops (repeated failure signature, flaky-oracle detection) — never budget-based ones; deterministic winner selection; single merger with the full suite after every merge.
+6. **Reports are falsifiable.** `node scripts/recheck.mjs runs/<id>` re-executes all recorded evidence and diffs exit codes. You don't have to trust an HW report — you can recheck it.
+
+## Layout
+
+```
+.claude-plugin/   plugin.json + marketplace.json
+commands/         9 slash commands (thin controllers)
+agents/           14 roles with tool-allowlist permission gradients
+workflows/        3 engines: hyperaudit, hyperapply, hw-sentinel (installed by /hw:init)
+hooks/            deny wall, session brief, telemetry sensor, court evidence gate
+scripts/          deterministic zero-dependency logic (Node >= 18 + POSIX sh)
+skills/           methodology: oracle-forging, spec-attack, tricolor-reporting, adjudication-protocol, merge-discipline
+```
+
+Design documents: [`hyperworkflows-design.md`](hyperworkflows-design.md) (architecture) and [`hw-plugin-design.md`](hw-plugin-design.md) (this plugin's design).
+
+## Honesty section
+
+- Producer, attacker, and verifier share a model family; correlated blind spots are mitigated by mutation/differential depth checks and early-run human spot-checks — not eliminated. Every report footer says so.
+- `/hw:doctor` empirically resolves the platform's open questions (named-workflow loading, workflow agent options, hook payload shape) and reports which fallbacks engaged.
+- Hooks activate on the **next** session after install. Protection is not installed until `/hw:doctor`'s guard check passes.
+
+## License
+
+MIT
