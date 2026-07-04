@@ -56,6 +56,7 @@ Local development: `claude --plugin-dir /path/to/hyperworkflows`. One platform n
 | `/hyperworkflows:recheck [run]` | Re-execute every recorded evidence command and diff exit codes — zero LLM calls |
 | `/hyperworkflows:sentinel [mode]` | merge/nightly/weekly probe suites, delta-vs-last-good, auto-bisect to the culprit commit |
 | `/hyperworkflows:court [contested]` | Adjudicate contested findings — rulings require *executed* evidence, never argument quality |
+| `/hyperworkflows:loop [scope] [rounds]` | Audit→approve→apply→re-audit rounds until clean or plateau; findings tracked by fingerprint, human gate never skipped |
 | `/hyperworkflows:enforce [status\|ci\|0-2]` | Manage the enforcement ladder; `ci` installs the E3 gate |
 | `/hyperworkflows:status` | One progress surface: done/total, measured rate, ETA with the arithmetic shown |
 | `/hyperworkflows:ratchet [run]` | Record measured run stats to the router table; distill reusable candidates |
@@ -174,10 +175,10 @@ Marked sections are idempotent — re-running updates in place, never duplicates
 
 ```
 .claude-plugin/   plugin.json + marketplace.json
-commands/         10 slash commands (thin controllers)
+commands/         11 slash commands (thin controllers)
 agents/           14 roles with tool-allowlist permission gradients
 workflows/        3 engines: hyperaudit, hyperapply, hypersentinel (auto-registered by the plugin)
-hooks/            deny wall, session brief, drumbeat, nudge, sensors, Stop gate, court gate
+hooks/            deny wall, secrets wall (.env), session brief, drumbeat, nudge, sensors, Stop gate, court gate
 scripts/          deterministic zero-dependency logic (Node >= 18 + POSIX sh)
 skills/           oracle-forging, spec-attack, tricolor-reporting, adjudication-protocol, merge-discipline
 adapters/         one installer for 17 coding tools

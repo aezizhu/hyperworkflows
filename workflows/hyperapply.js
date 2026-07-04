@@ -119,6 +119,18 @@ export default async function ({ head, plan_path, run_id }) {
   const done = [];
   for (const level of levelsOf(plan.groups)) {          // levels strictly serial
     const results = (await parallel(level.map(g => async () => {
+      // Pre-verify (dedup): if this group's acceptance already passes at base, the work
+      // exists — report ALREADY-APPLIED (verified) and spawn no builders. Makes reruns
+      // and racing orchestrators idempotent instead of duplicating work.
+      const pre = await agent(
+        `${VERIFIER}\nBase commit ${head}, current working tree. Run these commands in order and report raw exit codes:\n` +
+        g.acceptance.map(p => p.cmd).join("\n"),
+        { schema: ExitCodes, label: `preverify:${slug(g.id)}`, model: "sonnet" });
+      const preVerdict = adjudicate(g.acceptance, pre.exit_codes);         // C2
+      if (preVerdict.pass) {
+        log(`ALREADY-APPLIED: group ${g.id} acceptance passes at base — verified skip, no builders spawned`);
+        return { group: g, winner: { build: { branch: "(base)" }, status: "PASS", evidence: pre.exit_codes, rounds: 0, confirmed_findings: 0, already_applied: true } };
+      }
       const N = g.critical ? 5 : 3;
       const entries = (await parallel(Array.from({ length: N }, (_, i) => async () => {
         const build = await agent(
@@ -138,6 +150,10 @@ export default async function ({ head, plan_path, run_id }) {
   const merged = [], quarantined = [];
   for (const d of done) {
     if (!d.winner) { quarantined.push({ group: d.group.id, reason: "no green tournament entry", entries: d.entries.map(e => ({ status: e.status, sig: e.sig || null })) }); continue; }
+    if (d.winner.already_applied) {                    // verified at base; nothing to merge
+      merged.push({ group: d.group.id, branch: "(already applied at base)", rounds: 0, suite: d.winner.evidence, already_applied: true });
+      continue;
+    }
     const m = await agent(
       `${MERGER}\nRun ${run_id}, group ${d.group.id}. Protocol, in order:\n` +
       `1) touch runs/${run_id}/MERGE_TOKEN\n` +
