@@ -17,8 +17,8 @@ export const meta = {
 
 export default async function ({ head, scope, run_id, force }) {
 
-  // ---------- inlined deterministic helpers (canonical source: scripts/adjudicate.mjs) ----------
-  const adjudicate = (probes, exitCodes) => {
+  // HW-HELPERS-BEGIN (generated from scripts/adjudicate.mjs — edit the canonical source and run `npm run bundle`; do not edit this block by hand)
+  function adjudicate(probes, exitCodes) {
     const byCmd = new Map();
     for (const e of exitCodes || []) if (!byCmd.has(e.cmd)) byCmd.set(e.cmd, e.exit);
     const results = (probes || []).map(p => {
@@ -27,25 +27,32 @@ export default async function ({ head, scope, run_id, force }) {
     });
     const failures = results.filter(r => !r.ok);
     return { pass: results.length > 0 && failures.length === 0, results, failures };
-  };
-  const reconcileUnits = (enumerations) => {
-    const seen = new Map();
+  }
+  function reconcileUnits(enumerations) {
+    const seen = new Map(); // path -> { count, unit }
     for (const e of enumerations || []) {
       const paths = new Set();
       for (const u of (e && e.units) || []) {
         if (!u || !u.path || paths.has(u.path)) continue;
         paths.add(u.path);
         const rec = seen.get(u.path);
-        if (rec) rec.count += 1; else seen.set(u.path, { count: 1, unit: u });
+        if (rec) rec.count += 1;
+        else seen.set(u.path, { count: 1, unit: u });
       }
     }
     const units = [], disputed = [];
-    for (const [, rec] of [...seen.entries()].sort((a, b) => (a[0] < b[0] ? -1 : 1)))
+    for (const [, rec] of [...seen.entries()].sort((a, b) => a[0] < b[0] ? -1 : 1)) {
       (rec.count >= 2 ? units : disputed).push(rec.unit);
+    }
     return { units, disputed };
-  };
-  const sortByPath = us => (us || []).slice().sort((a, b) => String(a.path).localeCompare(String(b.path)));
-  const slug = p => String(p).replace(/[^a-zA-Z0-9._-]/g, "_");
+  }
+  function sortByPath(units) {
+    return (units || []).slice().sort((a, b) => String(a.path).localeCompare(String(b.path)));
+  }
+  function slug(s) {
+    return String(s).replace(/[^a-zA-Z0-9._-]/g, "_");
+  }
+  // HW-HELPERS-END
 
   // ---------- role contracts embedded in prompts (agentType may be unavailable in workflows) ----------
   const SCOUT = "ROLE: read-only scout. Measure and enumerate deterministically (path-lexicographic). Report numbers with the method that produced them. Never conclude beyond direct observation.";

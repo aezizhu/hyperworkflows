@@ -51,7 +51,20 @@ workflows/        3 engines: hyperaudit, hyperapply, hw-sentinel (installed by /
 hooks/            deny wall, session brief, telemetry sensor, court evidence gate
 scripts/          deterministic zero-dependency logic (Node >= 18 + POSIX sh)
 skills/           methodology: oracle-forging, spec-attack, tricolor-reporting, adjudication-protocol, merge-discipline
+adapters/devin/   portability proof: skills + role contracts for Devin (install.sh)
+test/             node:test suite for every deterministic component
 ```
+
+## Development
+
+```sh
+npm test              # node:test suite (pure logic, recheck end-to-end, all four hooks)
+npm run bundle        # regenerate helper blocks inlined in workflow engines
+npm run bundle:check  # CI gate: engines byte-identical to scripts/adjudicate.mjs
+npm run check         # bundle:check + tests (what CI runs)
+```
+
+The workflow runtime cannot import modules, so the deterministic helpers are inlined into each engine between `HW-HELPERS` markers — generated from the canonical `scripts/adjudicate.mjs` by `scripts/bundle-workflows.mjs`, and CI fails if they drift.
 
 Design documents: [`hyperworkflows-design.md`](hyperworkflows-design.md) (architecture) and [`hw-plugin-design.md`](hw-plugin-design.md) (this plugin's design).
 

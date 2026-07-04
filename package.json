@@ -1,0 +1,15 @@
+{
+  "name": "hyperworkflows",
+  "version": "0.2.0",
+  "private": true,
+  "type": "module",
+  "description": "Evidence-factory orchestration plugin for Claude Code",
+  "engines": { "node": ">=18.17" },
+  "scripts": {
+    "test": "node --test",
+    "bundle": "node scripts/bundle-workflows.mjs --write",
+    "bundle:check": "node scripts/bundle-workflows.mjs --check",
+    "check": "npm run bundle:check && node --test"
+  },
+  "license": "MIT"
+}

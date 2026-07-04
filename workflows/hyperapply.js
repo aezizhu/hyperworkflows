@@ -16,8 +16,8 @@ export const meta = {
 
 export default async function ({ head, plan_path, run_id }) {
 
-  // ---------- inlined deterministic helpers (canonical source: scripts/adjudicate.mjs) ----------
-  const adjudicate = (probes, exitCodes) => {
+  // HW-HELPERS-BEGIN (generated from scripts/adjudicate.mjs — edit the canonical source and run `npm run bundle`; do not edit this block by hand)
+  function adjudicate(probes, exitCodes) {
     const byCmd = new Map();
     for (const e of exitCodes || []) if (!byCmd.has(e.cmd)) byCmd.set(e.cmd, e.exit);
     const results = (probes || []).map(p => {
@@ -26,32 +26,42 @@ export default async function ({ head, plan_path, run_id }) {
     });
     const failures = results.filter(r => !r.ok);
     return { pass: results.length > 0 && failures.length === 0, results, failures };
-  };
-  const failureSignature = (exitCodes) => {
-    const norm = (exitCodes || []).map(e => `${e.cmd}::${e.exit}`).sort().join("|");
+  }
+  function failureSignature(exitCodes) {
+    const norm = (exitCodes || [])
+      .map(e => `${e.cmd}::${e.exit}`)
+      .sort()
+      .join("|");
     let h = 5381;
     for (let i = 0; i < norm.length; i++) h = ((h * 33) ^ norm.charCodeAt(i)) >>> 0;
     return h.toString(16).padStart(8, "0");
-  };
-  const selectWinner = (entries) => {
+  }
+  function selectWinner(entries) {
     const green = (entries || []).filter(e => e && e.status === "PASS");
     if (!green.length) return null;
-    const num = (v, fb) => (typeof v === "number" && Number.isFinite(v) ? v : fb);
+    const num = (v, fallback) => (typeof v === "number" && Number.isFinite(v) ? v : fallback);
     return green.slice().sort((a, b) =>
       (num(a.confirmed_findings, Infinity) - num(b.confirmed_findings, Infinity)) ||
+      (num(b.mutation_score, -1) - num(a.mutation_score, -1)) ||
+      (num(b.bench_score, -1) - num(a.bench_score, -1)) ||
       (num(a.rounds, Infinity) - num(b.rounds, Infinity)) ||
-      String(a.build && a.build.branch).localeCompare(String(b.build && b.build.branch)))[0];
-  };
-  const levelsOf = (groups) => {
+      String(a.build && a.build.branch).localeCompare(String(b.build && b.build.branch))
+    )[0];
+  }
+  function levelsOf(groups) {
     const byLevel = new Map();
     for (const g of groups || []) {
       const l = Number.isFinite(g.level) ? g.level : 0;
       if (!byLevel.has(l)) byLevel.set(l, []);
       byLevel.get(l).push(g);
     }
-    return [...byLevel.entries()].sort((a, b) => a[0] - b[0]).map(([, gs]) => gs.slice().sort((x, y) => String(x.id).localeCompare(String(y.id))));
-  };
-  const slug = s => String(s).replace(/[^a-zA-Z0-9._-]/g, "_");
+    return [...byLevel.entries()].sort((a, b) => a[0] - b[0]).map(([, gs]) =>
+      gs.slice().sort((x, y) => String(x.id).localeCompare(String(y.id))));
+  }
+  function slug(s) {
+    return String(s).replace(/[^a-zA-Z0-9._-]/g, "_");
+  }
+  // HW-HELPERS-END
 
   const VERIFIER = "ROLE: verifier. Run EXACTLY the commands given, in order. Report every raw exit code verbatim. Never retry, never fix, never interpret, never modify repository files. Verdicts are computed by script, not by you.";
   const BUILDER = "ROLE: builder. Implement to the contract in your isolated worktree. Follow existing repository conventions. Run the acceptance commands yourself before reporting; report branch, files changed, self-observed exit codes. You may be one of several blind tournament entries — commit fully to your approach.";

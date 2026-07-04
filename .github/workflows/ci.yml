@@ -1,0 +1,24 @@
+name: ci
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Shell syntax
+        run: for f in scripts/*.sh adapters/devin/install.sh; do sh -n "$f" && echo "OK $f"; done
+      - name: JS syntax
+        run: for f in scripts/*.mjs workflows/*.js; do node --check "$f" && echo "OK $f"; done
+      - name: JSON manifests
+        run: node -e "['.claude-plugin/plugin.json','.claude-plugin/marketplace.json','hooks/hooks.json','package.json'].forEach(f=>{JSON.parse(require('fs').readFileSync(f,'utf8'));console.log('OK '+f)})"
+      - name: Helper blocks in sync with canonical source
+        run: node scripts/bundle-workflows.mjs --check
+      - name: Tests
+        run: node --test

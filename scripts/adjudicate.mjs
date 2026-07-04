@@ -87,6 +87,11 @@ export function sortByPath(units) {
   return (units || []).slice().sort((a, b) => String(a.path).localeCompare(String(b.path)));
 }
 
+// --- slug(s) -> filesystem-safe identifier ----------------------------------------
+export function slug(s) {
+  return String(s).replace(/[^a-zA-Z0-9._-]/g, "_");
+}
+
 // --- buildTricolor(results, allUnits, crosscut) -> report -------------------------
 // results: [{ meta, verdict: { pass, results, failures }, status?, depth? }]
 // Constitution C4: verified / done-unverified / quarantined + grey, with coverage math.

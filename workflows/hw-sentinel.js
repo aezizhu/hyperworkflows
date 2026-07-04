@@ -13,7 +13,11 @@ export const meta = {
 export default async function ({ head, date, mode, run_id }) {
 
   const VERIFIER = "ROLE: verifier. Run the commands, report raw exit codes verbatim, write full output to the log path given. Never fix, never interpret, never modify repository files.";
-  const slug = s => String(s).replace(/[^a-zA-Z0-9._-]/g, "_");
+  // HW-HELPERS-BEGIN (generated from scripts/adjudicate.mjs — edit the canonical source and run `npm run bundle`; do not edit this block by hand)
+  function slug(s) {
+    return String(s).replace(/[^a-zA-Z0-9._-]/g, "_");
+  }
+  // HW-HELPERS-END
 
   const ProbeOut = { type: "object", properties: { exit: { type: "number" }, log_path: { type: "string" }, counts: { type: "object" } }, required: ["exit", "log_path"] };
 
