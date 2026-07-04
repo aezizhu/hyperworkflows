@@ -1,0 +1,29 @@
+name: Bug report
+description: Something misbehaves. Per house rules, bugs ship with executable repros.
+labels: [bug]
+body:
+  - type: textarea
+    id: repro
+    attributes:
+      label: Executable repro
+      description: The command(s) that demonstrate the bug and the exit code / output you expected vs got. This is a Hyperworkflows repo — evidence over prose.
+      placeholder: |
+        cmd: sh examples/demo.sh
+        expected: exit 0, DRIFT DETECTED shown
+        got: exit 1, "node: not found"
+    validations:
+      required: true
+  - type: textarea
+    id: env
+    attributes:
+      label: Environment
+      description: OS, Node version, Claude Code version (if plugin-side), enforcement level.
+      placeholder: |
+        macOS 15 / Node 22.4 / Claude Code 2.1.201 / HYPERWORKFLOWS_ENFORCE=2
+    validations:
+      required: true
+  - type: textarea
+    id: context
+    attributes:
+      label: Anything else
+      description: Doctor report path, hook stderr, run directory contents — whatever evidence you have.

@@ -1,0 +1,25 @@
+name: Feature request
+description: Propose a capability. State what becomes machine-checkable that isn't today.
+labels: [enhancement]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What can't be verified/enforced today?
+      description: Hyperworkflows features earn their place by making something checkable or enforceable. What's the gap?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed mechanism
+      description: Which layer (engine phase / role / hook / script / adapter / CI gate) and roughly how.
+    validations:
+      required: true
+  - type: dropdown
+    id: layer
+    attributes:
+      label: Layer
+      options: [engine (workflows), roles (agents), hooks/enforcement, scripts/toolkit, adapters, CI gate, docs]
+    validations:
+      required: true

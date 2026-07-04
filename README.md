@@ -1,6 +1,36 @@
 # Hyperworkflows
 
-Evidence-factory orchestration for Claude Code. Every claim is machine-verified (exit codes, not LLM opinion), every audit enumerates its denominator three independent ways, every delivery is an N-version tournament with gated serial merges — and every report can be re-verified later with **zero LLM calls**.
+> **Your coding agent says "All tests pass, everything works."**
+> **Hyperworkflows is how you stop taking its word for it.**
+
+[![CI](https://github.com/aezizhu/hyperworkflows/actions/workflows/ci.yml/badge.svg)](https://github.com/aezizhu/hyperworkflows/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![Claude Code plugin](https://img.shields.io/badge/Claude%20Code-plugin-d97757)](https://code.claude.com/docs/en/plugins)
+[![Works with 17 coding agents](https://img.shields.io/badge/adapters-17%20coding%20agents-8A2BE2)](#beyond-claude-code-every-mainstream-coding-agent)
+
+Every AI coding tool has the same failure mode: the model grades its own homework. Hyperworkflows makes that structurally impossible:
+
+- **Verdicts come from exit codes, not opinions.** Verifier agents report raw exit codes; a deterministic script — not any LLM — decides pass/fail. A model cannot talk its way past a red suite.
+- **Reports are falsifiable objects.** Every claim links a verdict file with the exact commands and recorded exit codes. Re-verify any report later with **zero LLM calls**: `node scripts/recheck.mjs runs/<id>`.
+- **Enforcement, not exhortation.** A 4-level ladder from context injection all the way to a CI required-status check that re-executes committed evidence on every PR — binding every agent, every tool, and every human.
+
+## The 60-second proof (no API key needed)
+
+```sh
+git clone https://github.com/aezizhu/hyperworkflows && cd hyperworkflows
+sh examples/demo.sh
+```
+
+You'll watch a report verify green by re-execution, then watch a sneaky off-by-one "refactor" get caught — with recheck naming the exact command that no longer reproduces:
+
+```
+"conclusion": "ALL EVIDENCE REPRODUCES — the report still holds at this working tree."
+...app.sh changed (off-by-one introduced)...
+"recorded": 0,  "actual": 1,
+"conclusion": "DRIFT DETECTED — the report's evidence no longer reproduces; treat affected claims as stale."
+```
+
+Reports are not prose. They are re-executable evidence.
 
 ## Install
 
@@ -104,6 +134,30 @@ sh adapters/install.sh <tool> /path/to/project     # or: all
 | Devin | `.devin/skills/hyperworkflows-*` + role prompts | — |
 
 Marked sections are idempotent (re-running the installer updates in place, never duplicates) and preserve your existing file content. Every adapter is covered by the test suite.
+
+## How is this different from a methodology plugin?
+
+| | Plain agent | Methodology plugins (Superpowers-style) | **Hyperworkflows** |
+|---|---|---|---|
+| Who decides "it works"? | The model itself | The model, after being told to be careful | **A deterministic script, from raw exit codes** |
+| Compliance is... | hoped for | preached at session start | **checkable — gates return exit 2** |
+| Report format | prose | prose | **tricolor + verdict files with commands & exit codes** |
+| Re-verifiable next week? | no | no | **one command, zero LLM calls** |
+| Survives context decay? | n/a | fades as the session grows | **re-injection on compact + per-turn drumbeat + gates that need no salience** |
+| Binds other tools/humans? | no | no | **E3 CI gate: required status on every PR** |
+| Coverage claims | vibes | vibes | **3-way enumeration, script-reconciled, HALT on dispute** |
+
+## FAQ
+
+**Won't this slow down small tasks?** No — the formation gate is code: under 5 touched units the fleet never launches and the session just works normally. Enforcement below level 2 never blocks anything.
+
+**What if my project has no tests?** Missing oracles are work items, not excuses: an oracle-smith forges executable acceptance (golden files, property tests, metamorphic relations) before anything is accepted as unverifiable — and what remains grey is *labeled* grey, never counted as verified.
+
+**Can't the model just fabricate verdict files?** It can write them — and get caught: `recheck` re-executes every recorded command, and the E3 CI gate does it on every PR. Fabricated evidence fails re-execution. That's the point of executable evidence over prose.
+
+**Does it work outside Claude Code?** The full engine (agent fleet, workflows, hooks) is Claude Code; the evidence discipline, verdict toolkit, and CI gate install into 17 other tools with one command (`sh adapters/install.sh <tool> <project>`).
+
+**What does it cost?** Fleet runs spend real tokens — that's a choice you make per task via the formation gate, never a surprise. The recheck/CI side costs zero LLM calls forever.
 
 ## Development
 
