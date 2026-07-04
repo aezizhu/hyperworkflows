@@ -7,7 +7,8 @@ Run an evidence-grade audit. Arguments: `$ARGUMENTS` (optional scope path; optio
 
 **Setup (all lazy — no init required)**
 1. `head` = `git rev-parse --short HEAD`. Scope = the given path; if none, changed files vs the default branch; if none, the repo root.
-2. `run_id` = `audit-<head>`. Create `runs/<run_id>/verdicts/` (mkdir -p), write `<run_id>` into `runs/ACTIVE`. First run only: if `runs/` is not covered by `.gitignore`, append `runs/` and `memory/` to it and mention that in one line.
+2. `run_id` = `audit-<head>`. If `runs/ACTIVE` already names this same run_id and `runs/<run_id>/report.json` does not exist, announce in one line: "resuming interrupted run <run_id> — completed prefix work replays from cache" (an interrupted fleet is normal, not an error). Create `runs/<run_id>/verdicts/` (mkdir -p), write `<run_id>` into `runs/ACTIVE`. First run only: if `runs/` is not covered by `.gitignore`, append `runs/` and `memory/` to it and mention that in one line.
+   For runs launched from a terminal that might close (headless campaigns), recommend `sh ${CLAUDE_PLUGIN_ROOT}/scripts/run-detached.sh` — a fleet must never die of a broken monitoring pipe.
 3. Print the initiation card (4 lines): exit condition (tricolor report with 100% of non-grey units adjudicated), phase plan (recon → enumerate-x3 → forge-oracles → spec-attack → analyze-attack-verify → crosscut-reduce), roster summary, and scope@head. Then proceed — do not wait for confirmation (the card is a veto point, not a gate).
 
 **Execute**
