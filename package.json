@@ -9,7 +9,8 @@
     "test": "node --test",
     "bundle": "node scripts/bundle-workflows.mjs --write",
     "bundle:check": "node scripts/bundle-workflows.mjs --check",
-    "check": "npm run bundle:check && node --test"
+    "check:engines": "node scripts/check-engines.mjs workflows/*.js",
+    "check": "npm run bundle:check && npm run check:engines && node --test"
   },
   "license": "MIT"
 }

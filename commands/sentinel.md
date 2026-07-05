@@ -10,7 +10,7 @@ Run `sh ${CLAUDE_PLUGIN_ROOT}/scripts/sentinel-install.sh` and show its output (
 
 **Otherwise (merge | nightly | weekly)**
 1. `head` = `git rev-parse --short HEAD`; `date` = today (Asia/Singapore); `run_id` = `sentinel-<date>-<mode>`. Create `runs/<run_id>/` (mkdir -p), write EXACTLY the run_id (single line, nothing else) into `runs/ACTIVE`.
-2. Run the engine shipped with this plugin: prefer the plugin-registered `hypersentinel` workflow if invocable by name; otherwise read `${CLAUDE_PLUGIN_ROOT}/workflows/hypersentinel.js` and execute it as a dynamic workflow with `{head, date, mode, run_id}`. (A project-local copy from optional `/hyperworkflows:init` takes precedence.)
+2. Run the engine shipped with this plugin: prefer the plugin-registered `hypersentinel` workflow if invocable by name; otherwise read `${CLAUDE_PLUGIN_ROOT}/workflows/hypersentinel.js` and execute it VERBATIM as a dynamic workflow — it is already in top-level Workflow-script form (inputs from the `args` global, self-resolving identity probe when args are missing); never rewrite or adapt it with `{head, date, mode, run_id}`. (A project-local copy from optional `/hyperworkflows:init` takes precedence.)
    **Headless rule:** scheduled/`-p` runs die ~600s after the turn ends unless `CLAUDE_CODE_PRINT_BG_WAIT_CEILING_MS=0` (run-detached.sh and the launchd template set it). Stay with the run until the result arrives.
 3. On completion:
    - No new regressions: one line — "Sentinel <mode>: no new regressions vs last-good (<baseline head>)." Plus fixed-count if any disappeared.

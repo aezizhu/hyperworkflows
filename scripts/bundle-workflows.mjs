@@ -57,8 +57,8 @@ function generateBlock(names, fns) {
     if (!fns.has(n)) throw new Error(`canonical helper not found: ${n}`);
     parts.push(fns.get(n));
   }
-  // Engines declare helpers inside the default function at 2-space indent.
-  return parts.join("\n").split("\n").map(l => (l.length ? "  " + l : l)).join("\n");
+  // Engines are runtime-native top-level scripts (W5): helpers live at 0 indent.
+  return parts.join("\n");
 }
 
 function processFile(rel, fns, write) {
@@ -67,7 +67,7 @@ function processFile(rel, fns, write) {
   const b = src.indexOf(BEGIN), e = src.indexOf(END);
   if (b === -1 || e === -1 || e < b) return { rel, status: "NO-MARKERS" };
   const currentNorm = src.slice(b + BEGIN.length, e);
-  const expectedBlock = "\n" + generateBlock(MANIFEST[rel], fns) + "\n  ";
+  const expectedBlock = "\n" + generateBlock(MANIFEST[rel], fns) + "\n";
   if (currentNorm === expectedBlock) return { rel, status: "IN-SYNC" };
   if (!write) return { rel, status: "OUT-OF-SYNC" };
   writeFileSync(path, src.slice(0, b + BEGIN.length) + expectedBlock + src.slice(e));
