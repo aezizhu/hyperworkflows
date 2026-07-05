@@ -103,7 +103,8 @@ export default async function ({ head, scope, run_id, force }) {
     `${SCOUT}\nEnumerate ALL auditable units in ${scope} at commit ${head} using METHOD: ${method}. ` +
     `For each unit output: path, risk (high|medium|low) with risk_reason, acceptance (array of {cmd, expect_exit} ` +
     `executable from the repo root that currently verify this unit — existing tests, build/lint targeting it), ` +
-    `grey=true when no executable acceptance exists. Path-lexicographic order. Do not omit units because they look trivial. ` +
+    `grey=true when no executable acceptance exists. Paths MUST be repo-relative (e.g. scripts/guard.sh — never absolute). ` +
+    `Path-lexicographic order. Do not omit units because they look trivial. ` +
     `Files over 500 lines: split into section-aligned sub-units (unit path "file#L<start>-L<end>", boundaries on ` +
     `function/class/section edges) so no analyzer swallows a 2000-line file whole; sub-units inherit the file's acceptance.`;
   const enums = (await parallel([
