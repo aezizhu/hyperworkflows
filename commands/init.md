@@ -8,7 +8,7 @@ Run the following ONLY because the user explicitly asked, and report every step 
 
 1. Verify this is a git repository (`git rev-parse --git-dir`). If not, stop and say Hyperworkflows needs git.
 2. **Local engine copies (optional benefit: prefix-cache stability across plugin updates, or project-specific engine customization)**: copy `${CLAUDE_PLUGIN_ROOT}/workflows/*.js` into `.claude/workflows/` with a version header. If a destination exists and differs, show a diff summary and ask before overwriting — the project may have local modifications. Without local copies, commands use the plugin-shipped engines automatically.
-3. **Gitignore hygiene**: append `runs/` and `memory/` to `.gitignore` if not already covered (otherwise this happens automatically on the first audit run).
+3. **Gitignore hygiene**: append `runs/`, `memory/`, and `.claude/worktrees/` to `.gitignore` if not already covered (otherwise this happens automatically on the first audit run).
 4. **Baseline seeding**: create `memory/router.md` (header: `# Hyperworkflows router - measured runs (formation | scope | units | agents | wall-clock | health)`) and `memory/last-good.json` (`{"head": null, "date": null, "failures": []}`) if missing.
 
 Print a completion card listing what changed. No workflow, audit, or other side effect runs during init. Do NOT tell the user to restart or run doctor — neither is part of onboarding.
