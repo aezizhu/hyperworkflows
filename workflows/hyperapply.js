@@ -68,7 +68,7 @@ export default async function ({ head, plan_path, run_id }) {
   // HYPERWORKFLOWS-HELPERS-END
 
   const VERIFIER = "ROLE: verifier. Run EXACTLY the commands given, in order. Report every raw exit code verbatim. Never retry, never fix, never interpret, never modify repository files. Verdicts are computed by script, not by you.";
-  const BUILDER = "ROLE: builder. Implement to the contract in your isolated worktree. Follow existing repository conventions. Run the acceptance commands yourself before reporting; report branch, files changed, self-observed exit codes. You may be one of several blind tournament entries — commit fully to your approach.";
+  const BUILDER = "ROLE: builder. FIRST create an isolated worktree: git worktree add .claude/worktrees/<your-branch> -b <your-branch> — NEVER checkout branches in the main working copy (parallel entries would stomp each other; observed in the field). Implement to the contract there, follow existing repository conventions, commit your work to the branch. Run the acceptance commands yourself before reporting; report branch, files changed, self-observed exit codes. You may be one of several blind tournament entries — commit fully to your approach.";
   const MERGER = "ROLE: single merger. Serial merges only. Full suite after every merge. Red suite means revert immediately. Mechanical conflicts may be resolved and noted; semantic conflicts are STUCK. Never push to remotes.";
   // Doctor-verified (W3): workflow agentType requires the fully-qualified plugin name.
   const ROLE = n => `hyperworkflows:hyperworkflows-${n}`;
@@ -161,12 +161,13 @@ export default async function ({ head, plan_path, run_id }) {
       continue;
     }
     const m = await agent(
-      `${MERGER}\nRun ${run_id}, group ${d.group.id}. Protocol, in order:\n` +
-      `1) touch runs/${run_id}/MERGE_TOKEN\n` +
+      `${MERGER}\nRun ${run_id}, group ${d.group.id}. Protocol, in order, from the MAIN worktree (repo root):\n` +
+      `0) git checkout the integration branch (the repository default: master/main) — never merge while a feature branch is checked out.\n` +
+      `1) touch the token file at the path the guard checks: runs/$(head -1 runs/ACTIVE | tr -cd 'A-Za-z0-9._-')/MERGE_TOKEN (also touch runs/${run_id}/MERGE_TOKEN if different).\n` +
       `2) git merge --no-ff ${d.winner.build.branch}\n` +
       `3) Run the FULL suite and record raw exit codes: ${plan.full_suite.map(p => p.cmd).join(" ; ")}\n` +
-      `4) If any suite command's exit differs from expectation ${JSON.stringify(plan.full_suite)}: git revert the merge immediately and say so.\n` +
-      `5) rm runs/${run_id}/MERGE_TOKEN\n` +
+      `4) If any suite command's exit differs from expectation ${JSON.stringify(plan.full_suite)}: git revert -m 1 the merge commit immediately and say so.\n` +
+      `5) rm the MERGE_TOKEN file(s) you created\n` +
       `Report: merged (boolean, true only if the merge REMAINED in place), conflict_files, suite exit_codes, reverted (boolean).`,
       { schema: { type: "object", properties: { merged: { type: "boolean" }, reverted: { type: "boolean" }, conflict_files: { type: "array", items: { type: "string" } }, exit_codes: { type: "array", items: { type: "object", properties: { cmd: { type: "string" }, exit: { type: "number" } } } } }, required: ["merged", "exit_codes"] }, agentType: ROLE("merger"), label: `merge:${slug(d.group.id)}`, model: "opus" });
     const suiteVerdict = adjudicate(plan.full_suite, m.exit_codes);        // C2: script re-adjudicates the merger's report

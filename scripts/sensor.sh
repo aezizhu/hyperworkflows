@@ -3,7 +3,9 @@
 # to the active run's journal. Never blocks, never fails the session.
 
 [ -f runs/ACTIVE ] || exit 0
-RUN_ID=$(cat runs/ACTIVE 2>/dev/null)
+# M2 field lesson: a sloppy driver wrote multiline garbage into ACTIVE and the sensor
+# went silently blind for a whole run. Take the FIRST line, strip to a safe charset.
+RUN_ID=$(head -1 runs/ACTIVE 2>/dev/null | tr -cd 'A-Za-z0-9._-')
 [ -n "$RUN_ID" ] || exit 0
 mkdir -p "runs/$RUN_ID" 2>/dev/null || exit 0
 

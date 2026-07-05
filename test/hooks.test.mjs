@@ -76,6 +76,31 @@ test("guard: merge-token gate survives -c injection (shared tokenizer)", () => {
   } finally { rmSync(dir, { recursive: true, force: true }); }
 });
 
+test("guard: M2 field regression — polluted multiline ACTIVE still gates coherently (first line, sanitized)", () => {
+  const dir = tmp();
+  try {
+    mkdirSync(join(dir, "runs", "apply-abc123"), { recursive: true });
+    // Driver garbage observed in the field: numeric id + log fragments on extra lines.
+    writeFileSync(join(dir, "runs", "ACTIVE"), "apply-abc123\n1783244243\nrun_id=apply-abc123\n");
+    const blocked = hook("guard.sh", bash("git merge feature-x"), dir);
+    assert.equal(blocked.code, 2);                          // gate engaged despite pollution
+    assert.match(blocked.err, /apply-abc123\/MERGE_TOKEN/); // and names the SANITIZED path
+    writeFileSync(join(dir, "runs", "apply-abc123", "MERGE_TOKEN"), "");
+    assert.equal(hook("guard.sh", bash("git merge feature-x"), dir).code, 0);
+  } finally { rmSync(dir, { recursive: true, force: true }); }
+});
+
+test("sensor: M2 field regression — polluted ACTIVE journals to the sanitized run dir", () => {
+  const dir = tmp();
+  try {
+    mkdirSync(join(dir, "runs"), { recursive: true });
+    writeFileSync(join(dir, "runs", "ACTIVE"), "apply-abc123\ngarbage line\n");
+    assert.equal(hook("sensor.sh", { hook_event_name: "SubagentStop", agent_type: "hyperworkflows-verifier", agent_id: "z9" }, dir).code, 0);
+    const line = JSON.parse(readFileSync(join(dir, "runs", "apply-abc123", "events.jsonl"), "utf8").trim());
+    assert.equal(line.agent, "hyperworkflows-verifier");
+  } finally { rmSync(dir, { recursive: true, force: true }); }
+});
+
 test("guard: MERGE_TOKEN protocol gates merge/push only while a run is active", () => {
   const dir = tmp();
   try {

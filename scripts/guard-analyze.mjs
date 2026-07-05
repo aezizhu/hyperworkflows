@@ -85,8 +85,10 @@ function main(input) {
   }
 
   // MERGE_TOKEN protocol — same tokenizer, enforced only while a run is active.
+  // M2 field lesson: ACTIVE may contain driver garbage (multiline, log fragments) —
+  // take the first line, sanitized, so the gate stays coherent with the sensor.
   if (existsSync("runs/ACTIVE")) {
-    const runId = readFileSync("runs/ACTIVE", "utf8").trim();
+    const runId = (readFileSync("runs/ACTIVE", "utf8").split("\n")[0] || "").replace(/[^A-Za-z0-9._-]/g, "");
     if (runId && !existsSync(`runs/${runId}/MERGE_TOKEN`)) {
       for (const clause of clauses) {
         const git = gitSub(tokenize(clause));

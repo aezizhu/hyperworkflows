@@ -7,11 +7,11 @@ Deliver a human-approved change plan. Argument: `$ARGUMENTS` (path to the plan; 
 
 **Preconditions**
 1. The plan MUST be human-approved. If the plan file has no approval marker and the human has not confirmed in this conversation, show the plan summary and ask first — this is the one gate that is never skipped.
-2. `head` = `git rev-parse --short HEAD`; `run_id` = `apply-<head>`. Create `runs/<run_id>/verdicts/` (mkdir -p), write `runs/ACTIVE`.
+2. `head` = `git rev-parse --short HEAD`; `run_id` = `apply-<head>`. Create `runs/<run_id>/verdicts/` (mkdir -p). Write `runs/ACTIVE` with EXACTLY the run_id as its only content (`printf '%s' "$run_id" > runs/ACTIVE` — never echo logs, timestamps, or anything else into it; the sensor and the merge gate key off this file, and a polluted ACTIVE blinded a whole run in the field).
 3. Initiation card: groups/units to deliver, tournament size (N=3 default, N=5 if the plan marks a group critical), merge discipline (single merger, serial, full suite per merge). Proceed without waiting.
 
 **Execute**
-4. Run the engine shipped with this plugin: prefer the plugin-registered `hyperapply` workflow if invocable by name; otherwise read `${CLAUDE_PLUGIN_ROOT}/workflows/hyperapply.js` and execute it as a dynamic workflow with `{head, plan_path, run_id}`. (A project-local copy from optional `/hyperworkflows:init` takes precedence.)
+4. Run the engine shipped with this plugin: prefer the plugin-registered `hyperapply` workflow if invocable by name; otherwise read `${CLAUDE_PLUGIN_ROOT}/workflows/hyperapply.js` and execute it as a dynamic workflow. The args object MUST carry the concrete values you computed — `{head: "<short-hash>", plan_path: "<path>", run_id: "apply-<short-hash>"}` — never invoke with missing/undefined members (a field run with `head: undefined` split its artifacts across two run dirs and got its own merger walled). (A project-local copy from optional `/hyperworkflows:init` takes precedence.)
 5. Milestones per level: groups done/total, entries green per group, repair rounds used. Asia/Singapore timestamps, measured-rate ETA.
    **Headless rule (non-interactive `-p` session):** the fleet dies ~600s after your turn ends unless `CLAUDE_CODE_PRINT_BG_WAIT_CEILING_MS=0` (run-detached.sh sets it). Stay with the run until the workflow result arrives; never end the turn on a promise to report later.
 

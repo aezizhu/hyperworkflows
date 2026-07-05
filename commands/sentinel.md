@@ -9,7 +9,7 @@ Time-plane operations. Argument: `$ARGUMENTS` (default: `merge`).
 Run `sh ${CLAUDE_PLUGIN_ROOT}/scripts/sentinel-install.sh` and show its output (three scheduling options). Only run with `--install-launchd` if the human explicitly picks option A. Note plainly: the launchd job fires at 02:30 machine-local time; confirm the machine timezone is Asia/Singapore.
 
 **Otherwise (merge | nightly | weekly)**
-1. `head` = `git rev-parse --short HEAD`; `date` = today (Asia/Singapore); `run_id` = `sentinel-<date>-<mode>`. Create `runs/<run_id>/` (mkdir -p), write `runs/ACTIVE`.
+1. `head` = `git rev-parse --short HEAD`; `date` = today (Asia/Singapore); `run_id` = `sentinel-<date>-<mode>`. Create `runs/<run_id>/` (mkdir -p), write EXACTLY the run_id (single line, nothing else) into `runs/ACTIVE`.
 2. Run the engine shipped with this plugin: prefer the plugin-registered `hypersentinel` workflow if invocable by name; otherwise read `${CLAUDE_PLUGIN_ROOT}/workflows/hypersentinel.js` and execute it as a dynamic workflow with `{head, date, mode, run_id}`. (A project-local copy from optional `/hyperworkflows:init` takes precedence.)
    **Headless rule:** scheduled/`-p` runs die ~600s after the turn ends unless `CLAUDE_CODE_PRINT_BG_WAIT_CEILING_MS=0` (run-detached.sh and the launchd template set it). Stay with the run until the result arrives.
 3. On completion:
