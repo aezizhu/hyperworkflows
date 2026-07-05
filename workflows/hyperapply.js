@@ -129,6 +129,9 @@ export default async function ({ head, plan_path, run_id } = {}) {
     `1) groups: units grouped by shared files — groups that touch ANY common file must share a level ordering ` +
     `(different levels) or be merged into one group; groups within one level MUST be file-disjoint. Each group: ` +
     `id, units (paths), level (0-based dependency order), acceptance [{cmd, expect_exit}] covering all its units, critical (boolean).\n` +
+    `Spec-attack each group's acceptance before emitting it (field: a tournament entry satisfied acceptance AND the suite ` +
+    `by sniffing $0 — invocation-dependent output): if a contract is satisfiable without the honest behavior change ` +
+    `(caller/env sniffing, vacuous conditions), ADD an acceptance probe that forbids the loophole.\n` +
     `2) full_suite: [{cmd, expect_exit}] — the repository's complete test/lint suite commands from the plan or project config.`,
     { schema: { type: "object", properties: { groups: { type: "array", items: { type: "object", properties: { id: { type: "string" }, units: { type: "array", items: { type: "string" } }, level: { type: "number" }, acceptance: { type: "array", items: Probe }, critical: { type: "boolean" } }, required: ["id", "units", "level", "acceptance"] } }, full_suite: { type: "array", items: Probe } }, required: ["groups", "full_suite"] }, agentType: ROLE("scout"), label: "topo-group", model: "opus" });
   if (!plan.full_suite || !plan.full_suite.length) { log("HALT: plan has no full_suite commands — merges cannot be gated (C2)"); return { formation: "HALT-NO-SUITE" }; }
