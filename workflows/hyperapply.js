@@ -14,11 +14,7 @@ export const meta = {
   phases: ["topo-group", "tournament-build", "merge"]
 };
 
-export default async function ({ head, plan_path, run_id }) {
-
-  // Field lesson #6: default run_id — artifacts must never land in runs/undefined/.
-  run_id = run_id || `apply-${head}`;
-  log(`run_id=${run_id} head=${head} plan=${plan_path}`);
+export default async function ({ head, plan_path, run_id } = {}) {
 
   // HYPERWORKFLOWS-HELPERS-BEGIN (generated from scripts/adjudicate.mjs — edit the canonical source and run `npm run bundle`; do not edit this block by hand)
   function adjudicate(probes, exitCodes) {
@@ -108,6 +104,23 @@ export default async function ({ head, plan_path, run_id }) {
         { schema: BuildOut, agentType: ROLE("builder"), label: `repair:${slug(tag)}:k${k}`, model: k % 2 === 0 ? "opus" : "sonnet" }); // rotate tiers to break anchoring
     }
   }
+
+  // Field lessons #6/#9: dynamic-workflow arg passing is UNRELIABLE at the platform
+  // level (two independent drivers both delivered head=undefined). When args are
+  // missing, resolve identity from the repo itself via a minimal probe — ACTIVE first
+  // (the driver-created run dir + the path the merge gate checks), then git HEAD.
+  if (!head || !run_id || !plan_path) {
+    const idp = await agent(
+      "ROLE: verifier. Run exactly these commands from the repo root and report outputs verbatim, trimmed: " +
+      "(1) git rev-parse --short HEAD  (2) head -1 runs/ACTIVE 2>/dev/null || true  " +
+      "(3) ls -t runs/*/decision-request.md 2>/dev/null | head -1 || true. Never modify anything.",
+      { schema: { type: "object", properties: { head: { type: "string" }, active: { type: "string" }, latest_plan: { type: "string" } }, required: ["head"] },
+        agentType: ROLE("verifier"), label: "identity-probe", model: "haiku" });
+    head = head || idp.head;
+    run_id = run_id || (idp.active || "").replace(/[^A-Za-z0-9._-]/g, "") || `apply-${head}`;
+    plan_path = plan_path || idp.latest_plan;
+  }
+  log(`run_id=${run_id} head=${head} plan=${plan_path}`);
 
   // ---------- phase: topo-group ----------
   phase("topo-group");

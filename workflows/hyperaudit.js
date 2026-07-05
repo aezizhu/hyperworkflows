@@ -15,11 +15,7 @@ export const meta = {
   phases: ["recon", "enumerate-x3", "forge-oracles", "spec-attack", "analyze-attack-verify", "crosscut-reduce"]
 };
 
-export default async function ({ head, scope, run_id, force }) {
-
-  // Field lesson #6: callers can forget run_id — default it so artifacts never land in runs/undefined/.
-  run_id = run_id || `audit-${head}`;
-  log(`run_id=${run_id} head=${head} scope=${scope}`);
+export default async function ({ head, scope, run_id, force } = {}) {
 
   // HYPERWORKFLOWS-HELPERS-BEGIN (generated from scripts/adjudicate.mjs — edit the canonical source and run `npm run bundle`; do not edit this block by hand)
   function adjudicate(probes, exitCodes) {
@@ -65,6 +61,21 @@ export default async function ({ head, scope, run_id, force }) {
   // Doctor-verified (W3): workflow agentType requires the fully-qualified plugin name.
   // Binds the role's tool allowlist for real; embedded contracts above stay as defense in depth.
   const ROLE = n => `hyperworkflows:hyperworkflows-${n}`;
+
+  // Field lessons #6/#9: dynamic-workflow arg passing is UNRELIABLE at the platform
+  // level (independent drivers delivered head=undefined twice). Resolve identity from
+  // the repo itself when args are missing — ACTIVE first, then git HEAD.
+  if (!head || !run_id) {
+    const idp = await agent(
+      "ROLE: verifier. Run exactly these commands from the repo root and report outputs verbatim, trimmed: " +
+      "(1) git rev-parse --short HEAD  (2) head -1 runs/ACTIVE 2>/dev/null || true. Never modify anything.",
+      { schema: { type: "object", properties: { head: { type: "string" }, active: { type: "string" } }, required: ["head"] },
+        agentType: ROLE("verifier"), label: "identity-probe", model: "haiku" });
+    head = head || idp.head;
+    run_id = run_id || (idp.active || "").replace(/[^A-Za-z0-9._-]/g, "") || `audit-${head}`;
+  }
+  scope = scope || ".";
+  log(`run_id=${run_id} head=${head} scope=${scope}`);
 
   // ---------- schemas ----------
   const Probe = { type: "object", properties: { cmd: { type: "string" }, expect_exit: { type: "number" } }, required: ["cmd", "expect_exit"] };

@@ -10,11 +10,7 @@ export const meta = {
   phases: ["probe", "diff", "auto-bisect"]
 };
 
-export default async function ({ head, date, mode, run_id }) {
-
-  // Field lesson #6: default run_id — artifacts must never land in runs/undefined/.
-  run_id = run_id || `sentinel-${date}-${mode || "merge"}`;
-  log(`run_id=${run_id} head=${head} mode=${mode}`);
+export default async function ({ head, date, mode, run_id } = {}) {
 
   const VERIFIER = "ROLE: verifier. Run the commands, report raw exit codes verbatim, write full output to the log path given. Never fix, never interpret, never modify repository files.";
   // HYPERWORKFLOWS-HELPERS-BEGIN (generated from scripts/adjudicate.mjs — edit the canonical source and run `npm run bundle`; do not edit this block by hand)
@@ -24,6 +20,21 @@ export default async function ({ head, date, mode, run_id }) {
   // HYPERWORKFLOWS-HELPERS-END
 
   const ROLE = n => `hyperworkflows:hyperworkflows-${n}`;   // doctor-verified (W3): fully-qualified agentType
+
+  // Field lessons #6/#9: dynamic-workflow arg passing is UNRELIABLE at the platform
+  // level. Resolve identity from the repo itself when args are missing.
+  if (!head || !date || !run_id) {
+    const idp = await agent(
+      "ROLE: verifier. Run exactly these commands from the repo root and report outputs verbatim, trimmed: " +
+      "(1) git rev-parse --short HEAD  (2) TZ=Asia/Singapore date +%F  (3) head -1 runs/ACTIVE 2>/dev/null || true. Never modify anything.",
+      { schema: { type: "object", properties: { head: { type: "string" }, date: { type: "string" }, active: { type: "string" } }, required: ["head", "date"] },
+        agentType: ROLE("verifier"), label: "identity-probe", model: "haiku" });
+    head = head || idp.head;
+    date = date || idp.date;
+    run_id = run_id || (idp.active || "").replace(/[^A-Za-z0-9._-]/g, "") || `sentinel-${date}-${mode || "merge"}`;
+  }
+  log(`run_id=${run_id} head=${head} mode=${mode}`);
+
   const PROBE_TYPE = { tests: "verifier", lint: "verifier", deps: "auditor", mutation: "prover", fuzz: "prover", bench: "benchmarker", assets: "verifier" };
   const ProbeOut = { type: "object", properties: { exit: { type: "number" }, log_path: { type: "string" }, counts: { type: "object" } }, required: ["exit", "log_path"] };
 
