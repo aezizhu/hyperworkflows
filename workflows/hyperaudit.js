@@ -17,6 +17,10 @@ export const meta = {
 
 export default async function ({ head, scope, run_id, force }) {
 
+  // Field lesson #6: callers can forget run_id — default it so artifacts never land in runs/undefined/.
+  run_id = run_id || `audit-${head}`;
+  log(`run_id=${run_id} head=${head} scope=${scope}`);
+
   // HYPERWORKFLOWS-HELPERS-BEGIN (generated from scripts/adjudicate.mjs — edit the canonical source and run `npm run bundle`; do not edit this block by hand)
   function adjudicate(probes, exitCodes) {
     const byCmd = new Map();
@@ -104,6 +108,7 @@ export default async function ({ head, scope, run_id, force }) {
     `For each unit output: path, risk (high|medium|low) with risk_reason, acceptance (array of {cmd, expect_exit} ` +
     `executable from the repo root that currently verify this unit — existing tests, build/lint targeting it), ` +
     `grey=true when no executable acceptance exists. Paths MUST be repo-relative (e.g. scripts/guard.sh — never absolute). ` +
+    `ONLY units whose path lies inside ${scope} — dependencies or callers outside it are OUT of scope, do not include them. ` +
     `Path-lexicographic order. Do not omit units because they look trivial. ` +
     `Files over 500 lines: split into section-aligned sub-units (unit path "file#L<start>-L<end>", boundaries on ` +
     `function/class/section edges) so no analyzer swallows a 2000-line file whole; sub-units inherit the file's acceptance.`;
@@ -128,6 +133,16 @@ export default async function ({ head, scope, run_id, force }) {
       log(`HALT-ENUM: ${unresolved} units unresolved (>5% of denominator) — a wrong denominator poisons every downstream claim`);
       return { formation: "HALT-ENUM", unresolved, disputed, units_so_far: units.length };
     }
+  }
+
+  // Field lesson #7: enumerators follow dependency graphs OUT of scope (a scripts/
+  // audit ballooned into agents/ + test/ + adapters/). Deterministic clamp, C5-logged.
+  if (scope && scope !== "." && scope !== "./") {
+    const s = String(scope).replace(/^\.\//, "").replace(/\/+$/, "");
+    const inScope = p => { const q = String(p).replace(/^\.\//, ""); return q === s || q.startsWith(s + "/") || q.startsWith(s + "#"); };
+    const before = units.length;
+    units = units.filter(u => inScope(u.path));
+    if (before !== units.length) log(`SCOPE-CLAMP: ${before - units.length} out-of-scope units dropped (scope=${scope}, kept=${units.length})`); // C5
   }
 
   // ---------- phase: forge-oracles (C1) ----------

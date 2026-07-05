@@ -16,6 +16,10 @@ export const meta = {
 
 export default async function ({ head, plan_path, run_id }) {
 
+  // Field lesson #6: default run_id — artifacts must never land in runs/undefined/.
+  run_id = run_id || `apply-${head}`;
+  log(`run_id=${run_id} head=${head} plan=${plan_path}`);
+
   // HYPERWORKFLOWS-HELPERS-BEGIN (generated from scripts/adjudicate.mjs — edit the canonical source and run `npm run bundle`; do not edit this block by hand)
   function adjudicate(probes, exitCodes) {
     const byCmd = new Map();

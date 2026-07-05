@@ -12,6 +12,10 @@ export const meta = {
 
 export default async function ({ head, date, mode, run_id }) {
 
+  // Field lesson #6: default run_id — artifacts must never land in runs/undefined/.
+  run_id = run_id || `sentinel-${date}-${mode || "merge"}`;
+  log(`run_id=${run_id} head=${head} mode=${mode}`);
+
   const VERIFIER = "ROLE: verifier. Run the commands, report raw exit codes verbatim, write full output to the log path given. Never fix, never interpret, never modify repository files.";
   // HYPERWORKFLOWS-HELPERS-BEGIN (generated from scripts/adjudicate.mjs — edit the canonical source and run `npm run bundle`; do not edit this block by hand)
   function slug(s) {
