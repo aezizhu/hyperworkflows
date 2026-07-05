@@ -16,11 +16,13 @@ process.stdin.on("end", () => {
 
 [ -n "$FILE" ] || exit 0
 
+# Basename split on both / and \ (audit-13d2374 group C: backslash paths slipped past).
 BASE=${FILE##*/}
+BASE=${BASE##*\\}
 case "$BASE" in
   .env.example|.env.sample|.env.template|.env.dist|.env.test)
     exit 0 ;;
-  .env|.env.*)
+  .env|.env.*|.envrc|.env~)
     printf 'Hyperworkflows secrets wall: refusing to modify %s (secret material).\nEdit the template variant (.env.example) instead, or ask the human to change secrets themselves.\n' "$BASE" >&2
     exit 2 ;;
 esac

@@ -44,6 +44,38 @@ test("guard: blocks recursive delete outside sanctioned areas and history rewrit
   } finally { rmSync(dir, { recursive: true, force: true }); }
 });
 
+test("guard: audit-13d2374 group A regressions — tokenized force-push detection", () => {
+  const dir = tmp();
+  try {
+    assert.equal(hook("guard.sh", bash("git -c core.editor=true push --force origin main"), dir).code, 2); // -c ride-along
+    assert.equal(hook("guard.sh", bash("git push origin +main"), dir).code, 2);                             // +refspec force
+    assert.equal(hook("guard.sh", bash("git push --force-with-lease=main origin main"), dir).code, 2);
+    assert.equal(hook("guard.sh", bash("echo done && git push -f origin main"), dir).code, 2);              // compound clause
+    assert.equal(hook("guard.sh", bash("git push origin main"), dir).code, 0);                              // plain push stays legal
+  } finally { rmSync(dir, { recursive: true, force: true }); }
+});
+
+test("guard: audit-13d2374 group B regressions — per-clause rm judgment, no ride-alongs", () => {
+  const dir = tmp();
+  try {
+    assert.equal(hook("guard.sh", bash("rm -rf /tmp/x && rm -rf src/"), dir).code, 2);   // sanctioned clause can't launder the second
+    assert.equal(hook("guard.sh", bash("rm -rf /tmp/../etc"), dir).code, 2);             // traversal out of the allowlist
+    assert.equal(hook("guard.sh", bash("rm -fr src/"), dir).code, 2);                    // flag order
+    assert.equal(hook("guard.sh", bash("rm -rf /tmp/a node_modules"), dir).code, 0);     // every path allowlisted -> fine
+  } finally { rmSync(dir, { recursive: true, force: true }); }
+});
+
+test("guard: merge-token gate survives -c injection (shared tokenizer)", () => {
+  const dir = tmp();
+  try {
+    mkdirSync(join(dir, "runs", "r1"), { recursive: true });
+    writeFileSync(join(dir, "runs", "ACTIVE"), "r1");
+    assert.equal(hook("guard.sh", bash("git -c user.name=x merge feature-x"), dir).code, 2);
+    writeFileSync(join(dir, "runs", "r1", "MERGE_TOKEN"), "");
+    assert.equal(hook("guard.sh", bash("git -c user.name=x merge feature-x"), dir).code, 0);
+  } finally { rmSync(dir, { recursive: true, force: true }); }
+});
+
 test("guard: MERGE_TOKEN protocol gates merge/push only while a run is active", () => {
   const dir = tmp();
   try {

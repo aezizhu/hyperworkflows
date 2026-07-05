@@ -35,7 +35,12 @@ export function runRecheck(target, { cwd = process.cwd(), timeoutSec = 120 } = {
     let v;
     try { v = JSON.parse(readFileSync(join(dir, f), "utf8")); }
     catch (e) { errors.push({ file: f, error: `unparseable JSON: ${e.message}` }); continue; }
-    for (const p of v.probes || []) {
+    // audit-13d2374 group D: malformed probes crashed instead of erroring cleanly.
+    if (!Array.isArray(v.probes) || v.probes.some(p => !p || typeof p.cmd !== "string")) {
+      errors.push({ file: f, error: "malformed verdict: probes must be an array of {cmd, expect_exit, exit}" });
+      continue;
+    }
+    for (const p of v.probes) {
       checked++;
       // Sequential, shell-executed, per-command timeout. Determinism over speed.
       const r = spawnSync(p.cmd, { shell: true, cwd, timeout: timeoutSec * 1000, stdio: ["ignore", "ignore", "ignore"] });

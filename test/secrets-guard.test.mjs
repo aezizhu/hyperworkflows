@@ -44,3 +44,10 @@ test("secrets-guard: notebook_path payloads are covered; garbage fails open", ()
   assert.equal(guard("not json").code, 0);
   assert.equal(guard({}).code, 0);
 });
+
+test("secrets-guard: audit-13d2374 group C regressions — .envrc, tilde backups, backslash paths", () => {
+  assert.equal(guard(edit("/repo/.envrc")).code, 2);
+  assert.equal(guard(edit("/repo/.env~")).code, 2);
+  assert.equal(guard(edit("C:\\repo\\.env.production")).code, 2);   // backslash basename split
+  assert.equal(guard(edit("/repo/.env.example")).code, 0);          // templates still editable
+});

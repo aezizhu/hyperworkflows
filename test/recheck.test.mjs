@@ -49,6 +49,16 @@ test("recheck: drift detected -> exit 1 with the exact command named", () => {
   } finally { rmSync(dir, { recursive: true, force: true }); }
 });
 
+test("recheck: audit-13d2374 group D regression — malformed probes error cleanly, no crash", () => {
+  const dir = makeRun({ "bad.json": { unit: "x", verdict: "PASS", probes: "not-an-array" } });
+  try {
+    const { code, out } = runRecheck(dir);
+    assert.equal(code, 1);
+    assert.equal(out.unparseable, 1);
+    assert.match(out.errors[0].error, /malformed verdict/);
+  } finally { rmSync(dir, { recursive: true, force: true }); }
+});
+
 test("recheck: unparseable verdict file is an error, never silently skipped", () => {
   const dir = mkdtempSync(join(tmpdir(), "hyperworkflows-recheck-"));
   mkdirSync(join(dir, "verdicts"));
